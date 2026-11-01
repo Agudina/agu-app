@@ -30,6 +30,7 @@
   .row:last-child { border-bottom: 0; }
   .row .l { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .row .r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .row .r.wrap { white-space: normal; }
   .muted { color: var(--hint); font-size: 12px; }
   .dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
   .ok { background: var(--ok); } .down { background: var(--bad); } .idle { background: var(--idle); } .off { background: transparent; border: 1.5px solid var(--idle); }
@@ -98,7 +99,7 @@ const VIEWS = {
     const tot = S.acct.filter(a => a.ok).reduce((s, a) => s + (+a.bal || 0), 0), risk = S.acct.reduce((s, a) => s + (+a.risk || 0), 0);
     h += `<div class="grid2"><div class="kpi"><span class="muted">All accounts</span><span class="big">${money(tot)}</span></div><div class="kpi"><span class="muted">At stops now</span><span class="big">${money(risk)}</span><span class="muted">${tot ? (100*risk/tot).toFixed(1) + "% of all money" : ""}</span></div></div>`;
     const sys = S.sys || {};
-    h += `<div class="card"><h2>Systems</h2>${Object.entries(sys).map(([n, s]) => `<div class="row"><div class="l"><b>${esc(n)}</b> ${verdictPill(s.v)}</div><div class="r">${s.n || 0} trades · ${s.avg == null ? "–" : sgn(s.avg) + " bp"}<div class="muted">test ${s.test == null ? "–" : sgn(s.test) + " bp"} · open ${s.open ?? 0}</div></div></div>`).join("")}<div class="muted">decay report ${esc(S.decay_t)} UTC</div></div>`;
+    h += `<div class="card"><h2>Systems</h2>${Object.entries(sys).map(([n, s]) => `<div class="row"><div class="l"><b>${esc(n)}</b> ${verdictPill(s.v)}</div><div class="r">${s.n || 0} trades · ${s.avg == null ? "–" : sgn(s.avg) + " bp"}<div class="muted">test ${s.test == null ? "–" : sgn(s.test) + " bp"} · open ${s.open ?? 0}</div></div></div>`).join("")}${goldRow()}<div class="muted">decay report ${esc(S.decay_t)} UTC</div></div>`;
     h += `<div class="card"><h2>Health</h2>${S.health.map(x => `<div class="row"><div class="l"><span class="dot ${x.s}"></span>${esc(x.n)}</div><div class="r muted">${x.s === "off" ? "not set up" : x.s === "idle" ? "weekend / off-hours" : x.age + " min"}</div></div>`).join("")}</div>`;
     return h;
   },
@@ -120,7 +121,7 @@ const VIEWS = {
     return h;
   },
   edges() {
-    return Object.entries(S.sys || {}).map(([n, s]) => `<div class="card"><h2>${esc(n)}</h2>
+    return goldCard() + Object.entries(S.sys || {}).map(([n, s]) => `<div class="card"><h2>${esc(n)}</h2>
       <div class="row"><div class="l">Verdict</div><div class="r">${verdictPill(s.v)}</div></div>
       <div class="row"><div class="l">Closed live trades</div><div class="r">${s.n || 0} <span class="muted">(${n === "DL1" ? "checkpoint 20" : "judged at 20 / 30"})</span></div></div>
       <div class="bar"><i style="width:${Math.min(100, 100*(s.n||0)/20)}%"></i></div>
@@ -152,6 +153,29 @@ const VIEWS = {
     return h;
   },
 };
+
+function goldPill(st) {
+  const c = st === "YES" ? "g" : st === "GET READY" ? "y" : "";
+  return `<span class="pill ${c}">${esc(st || "–")}</span>`;
+}
+function goldRow() {
+  const g = S.gold; if (!g) return "";
+  return `<div class="row"><div class="l"><b>Gold</b> ${goldPill(g.status)}</div><div class="r">${g.n} trades · ${money(g.net)}<div class="muted">test +${g.test.r} R/trade · ${g.on ? "on" : "off"} · ${g.risk}% risk</div></div></div>`;
+}
+function goldCard() {
+  const g = S.gold; if (!g) return "";
+  const t = g.test || {};
+  return `<div class="card"><h2>Gold</h2>
+    <div class="row"><div class="l">Buy setup</div><div class="r">${goldPill(g.status)} <span class="muted">${esc(g.decision || "")}</span></div></div>
+    <div class="row"><div class="l">Last gold-day close</div><div class="r">${g.close ?? "–"} <span class="muted">${esc(g.decided)} UTC</span></div></div>
+    <div class="row"><div class="l">vs 50-day average</div><div class="r ${g.gap50 > 0 ? "pos" : g.gap50 < 0 ? "neg" : ""}">${g.gap50 == null ? "–" : sgn(g.gap50, 2) + "%"} <span class="muted">(${g.ma50 ?? "–"})</span></div></div>
+    <div class="row"><div class="l">4h trend</div><div class="r">${esc(g.trend || "–")}</div></div>
+    <div class="muted" style="margin:2px 0 6px">Buys only when the close is above the 50-day AND the 4h trend is UP.</div>
+    <div class="row"><div class="l">Live trades</div><div class="r">${g.n} · ${g.wins} won · ${money(g.net)}</div></div>
+    <div class="row"><div class="l">Test</div><div class="r wrap">+${t.r} R/trade · ${Math.round(100*(t.win||0))}% wins<div class="muted">${t.n} trades ${esc(t.span)}, ${esc(t.note)}</div></div></div>
+    <div class="row"><div class="l">Account</div><div class="r">${money(g.bal)} · ${g.risk}% risk · trading ${g.on ? "on" : "off"}</div></div>
+    ${(g.open || []).map(o => `<div class="row"><div class="l">OPEN ${o[0]} oz @ ${o[1]}</div><div class="r">stop ${o[2] ?? "–"} · ${money(o[3])}</div></div>`).join("")}</div>`;
+}
 
 function render() {
   const nav = document.getElementById("tabs"); nav.innerHTML = "";
