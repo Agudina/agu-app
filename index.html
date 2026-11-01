@@ -54,7 +54,7 @@
 </head>
 <body>
 <header>
-  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v6 · 1 Nov</span></h1>
+  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v9 · 1 Nov</span></h1>
   <div class="sub" id="stamp">loading…</div>
 </header>
 <nav id="tabs"></nav>
@@ -62,7 +62,7 @@
 <script>
 const TG = window.Telegram && window.Telegram.WebApp;
 if (TG) { TG.ready(); TG.expand(); }
-const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["sys","System"],["cmds","Commands"]];
+const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["mkt","Market"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["sys","System"],["cmds","Commands"]];
 let S = null, tab = "home";
 const $ = (h) => { const d = document.createElement("div"); d.innerHTML = h.trim(); return d.firstChild; };
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
@@ -177,14 +177,38 @@ const VIEWS = {
       <textarea id="cx" rows="2" style="width:100%;margin:6px 0;padding:8px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text)"></textarea>
       <button class="btn" onclick="calcTyped()">Calculate</button><div id="cout" style="margin-top:8px"></div></div>`;
     h += ["1D", "4h", "DL1"].map(k => `<div class="card"><h2>${k} live · gross bp</h2>${calcRows(C[k], (C[k] || {}).usd)}</div>`).join("");
-    if (R) h += `<div class="card"><h2>EUR reverse record (no money)</h2>${Object.keys(R).filter(k => k !== "t").map(k => { const z = R[k] || {}, a = z.a || {}, r = z.r || {};
+    if (R) h += `<div class="card"><h2>Paper records · four scenarios (no money)</h2>${Object.keys(R).filter(k => k !== "t").map(k => { const z = R[k] || {}, a = z.a || {}, r = z.r || {};
         const line = q => !q.n ? "no closed trades" : `${q.n} · ${sgn(q.mean_bp)} bp · t ${q.t == null ? "–" : sgn(q.t, 2)} · ${Math.round(100 * q.win)}% wins`;
-        return `<div class="row"><div class="l"><b>${k}</b> as signalled</div><div class="r wrap">${line(a)}</div></div>
-          <div class="row"><div class="l"><b>${k}</b> REVERSED</div><div class="r wrap ${r.mean_bp > 0 ? "pos" : r.mean_bp < 0 ? "neg" : ""}">${line(r)}</div></div>
-          ${(z.rf || {}).n && (z.ri || {}).n ? `<div class="row"><div class="l muted">reversed FX only</div><div class="r wrap ${z.rf.mean_bp > 0 ? "pos" : "neg"}">${line(z.rf)}</div></div><div class="row"><div class="l muted">reversed indices only</div><div class="r wrap ${z.ri.mean_bp > 0 ? "pos" : "neg"}">${line(z.ri)}</div></div>` : ""}
-          ${(z.last || []).map(t => `<div class="row"><div class="l muted">${esc(t[0])} ${esc(t[1])} ${esc(t[2])}</div><div class="r muted">${sgn(t[3])} bp (${esc(t[4])})</div></div>`).join("")}`; }).join("")}
-      <div class="muted">EUR-pair signals (1D, DL1) also played the opposite way. 1D EUR backtest: as signalled -0.8 / +1.0 bp, reversed about -1.2 / -3.0 bp -- no edge either way yet. Updated ${esc(R.t)} UTC.</div></div>`;
+        return `<div class="row"><div class="l"><b>${esc(k)}</b></div><div class="r muted">${esc(z.an || "as signalled")} vs ${esc(z.rn || "rule")}</div></div>
+          <div class="row"><div class="l muted">${esc(z.an || "as signalled")}</div><div class="r wrap">${line(a)}</div></div>
+          <div class="row"><div class="l"><b>${esc(z.rn || "rule")}</b></div><div class="r wrap ${r.mean_bp > 0 ? "pos" : r.mean_bp < 0 ? "neg" : ""}">${line(r)}</div></div>
+          ${(z.st || []).filter(x => (x[1] && x[1][0]) || (x[2] && x[2][0])).map(x => `<div class="row"><div class="l muted">· ${esc(x[0])}</div><div class="r muted">2-day ${x[1] && x[1][0] ? x[1][0] + " · " + sgn(x[1][1]) : "–"} | Friday ${x[2] && x[2][0] ? x[2][0] + " · " + sgn(x[2][1]) : "–"} bp</div></div>`).join("")}`; }).join("")}
+      <div class="muted">Four scenarios, FX only, for DL1 and 1D: 1 model non-EUR · 2 model EUR · 3 reverse non-EUR · 4 reverse EUR; each by market state (UP / DOWN / SIDEWAYS). Backtest, Friday hold: DL1 model DOWN buys +32 bp (t 3.2), SIDEWAYS -32; DL1 reverse SIDEWAYS +52 (26 trades); EUR with-trend holds lose. Updated ${esc(R.t)} UTC.</div></div>`;
     h += `<div class="muted" style="text-align:center">t ≥ 2 = proven · "trades needed" = how many trades this edge needs to prove itself</div>`;
+    return h;
+  },
+  mkt() {
+    const M = S.ms, G = (S.res || {}).gap;
+    const ZN = {D: ["Deep dip", "g", "more than 3% below its 50-day average", "Buy the dip: 1D +20.8 bp (t 2.3), DL1 +32.7 (t 2.9), 4h +42.5 (t 2.5) per trade. Never reverse here."],
+                E: ["EUR reversal zone", "y", "EUR pair 0-3% below its average", "Your reversal (sell): 1D +7.4, DL1 +12.7 bp. EUR model buys 1.5-3% below lose -20.6 bp."],
+                H: ["4h favoured", "g", "UK100 / JPN225 0-3% below", "4h's trades +16 to +19 bp per trade below the average (both halves)."],
+                R: ["Big rally", "y", "more than 3% above its average", "1D sells +14.8 bp (t 2.0); DL1 sells only +2.5."],
+                N: ["No edge", "", "within 3% of its average", "Nothing found: 1D within 3% -3.7 bp per trade. Skip."]};
+    const SN = {U: "up", D: "down", S: "sideways", "?": "?"};
+    if (!M || !M.p) return `<div class="empty">No market state yet -- shadow_manager.py builds it every hour (restart it from System).</div>`;
+    let h = `<div class="grid2"><div class="kpi"><span class="muted">Deep dips now</span><span class="big pos">${M.p.filter(x => x[3] === "D").length}</span></div><div class="kpi"><span class="muted">EUR reversal zone</span><span class="big">${M.p.filter(x => x[3] === "E").length}</span></div></div>`;
+    for (const z of ["D", "E", "H", "R", "N"]) {
+      const ps = M.p.filter(x => x[3] === z); if (!ps.length) continue;
+      const [name, c, where, rule] = ZN[z];
+      h += `<div class="card"><h2>${name} · ${ps.length}</h2><div class="muted" style="margin-bottom:6px">${where}. ${rule}</div>
+        ${ps.map(x => `<div class="row"><div class="l"><b>${esc(x[0])}</b> <span class="pill ${x[1] === "U" ? "g" : x[1] === "D" ? "r" : ""}">${SN[x[1]] || x[1]}</span>${x[1] === "S" ? ` <span class="muted">DL1 weak</span>` : ""}</div><div class="r"><span class="pill ${c}">${sgn(x[2], 1)}%</span></div></div>`).join("")}</div>`;
+    }
+    if (G) h += `<div class="card"><h2>Distance from the 50-day (backtest)</h2><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums">
+      <tr><th style="text-align:left;color:var(--hint);font-weight:500">model, bp/trade</th>${(G.b || []).map(b => `<th style="color:var(--hint);font-weight:500;padding:2px 3px">${esc(b)}</th>`).join("")}</tr>
+      ${(G.r || []).map(r => `<tr><td style="padding:4px 4px 4px 0">${esc(r[0])}</td>${r[1].map(v => `<td style="text-align:right;padding:2px 3px" class="${v > 5 ? "pos" : v < -5 ? "neg" : ""}">${sgn(v, 0)}</td>`).join("")}</tr>`).join("")}
+      ${G.rev ? Object.entries(G.rev).map(([k, v]) => `<tr><td style="padding:4px 4px 4px 0">${esc(k)} EUR REVERSED</td>${v.map(x => `<td style="text-align:right;padding:2px 3px" class="${x > 5 ? "pos" : x < -5 ? "neg" : ""}">${sgn(x, 0)}</td>`).join("")}</tr>`).join("") : ""}
+      </table></div><div class="muted">Previous day's close vs its 50-day average, 2020-26. Swipe for all columns.</div></div>`;
+    h += `<div class="muted" style="text-align:center">Updated ${esc(M.t)} UTC (hourly) · trend = above a rising / below a falling 50-day average · all zone rules are candidates, tracked in the paper records (Calc tab). Nothing here trades. <a href="#" style="color:var(--accent)" onclick='runCmd("market");return false'>/market in the chat</a></div>`;
     return h;
   },
   res() {
@@ -228,7 +252,8 @@ const VIEWS = {
       ["decay", "Edge decay report", "1D, 4h, DL1 live vs test, signal rate, regime"], ["shadow", "Shadow report", "why, since when, wins needed"],
       ["risk", "All accounts", "money, open trades, loss at the stops"], ["wage", "Wage account", "balance, this week, safe to withdraw"],
       ["calc", "Raw model calculator", "every system's t, edge/noise, trades needed (also the Calc tab)"],
-      ["reverse", "EUR reverse record", "1D and DL1 EUR signals traded the opposite way (also the Calc tab)"],
+      ["reverse", "Paper records", "EUR reverse rule (Friday hold) and DL1 Friday hold (also the Calc tab)"],
+      ["market", "Market state", "every pair's trend, distance from its 50-day and zone (also the Market tab)"],
       ["research", "Research log", "every edge test and its verdict (also the Research tab)"], ["ev", "EV research brief", "lithium / cobalt / manganese outlooks, model skill (also the Research tab)"], ["help", "All commands", "the full list with options"]];
     return `<div class="card"><h2>Bot commands</h2>${L.map(([c, t, d]) => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(t)}</b><span class="muted">/${c} · ${esc(d)}</span></div><div class="r"><button class="btn ghost" onclick='runCmd(${JSON.stringify(c)})'>Show</button></div></div>`).join("")}</div>
       <div class="muted" style="text-align:center">The answer arrives in the chat (the app closes). Commands with options, like /gold 400 2 3d, still work typed.</div>`;
