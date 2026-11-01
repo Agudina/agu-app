@@ -54,7 +54,7 @@
 </head>
 <body>
 <header>
-  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v5.1 · 1 Nov</span></h1>
+  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v6 · 1 Nov</span></h1>
   <div class="sub" id="stamp">loading…</div>
 </header>
 <nav id="tabs"></nav>
@@ -62,7 +62,7 @@
 <script>
 const TG = window.Telegram && window.Telegram.WebApp;
 if (TG) { TG.ready(); TG.expand(); }
-const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["cmds","Commands"]];
+const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["sys","System"],["cmds","Commands"]];
 let S = null, tab = "home";
 const $ = (h) => { const d = document.createElement("div"); d.innerHTML = h.trim(); return d.firstChild; };
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
@@ -89,6 +89,11 @@ function send(action, question) {
 function runCmd(c) {   // V4: a read-only bot command -- the answer arrives in the chat (the app closes)
   if (TG && TG.sendData && TG.initData !== undefined) TG.sendData(JSON.stringify({a: "cmd", c: c}));
   else alert("Open the app from the bot's 📱 button to run commands.");
+}
+
+function quick(action) {   // V6: read-only request (a log) -- no confirmation; the answer arrives in the chat
+  if (TG && TG.sendData && TG.initData !== undefined) TG.sendData(JSON.stringify(action));
+  else alert("Open the app from the bot's 📱 button.");
 }
 
 function stats(x) {   // V4: the raw model calculator, same maths as raw_model_calculator.py
@@ -201,6 +206,19 @@ const VIEWS = {
       <div style="margin-top:8px;display:flex;gap:8px"><button class="btn" onclick='send({a:"ev_run"}, "Refresh the EV research now? (downloads the latest data and re-runs the models, a few minutes)")'>Update EV data</button><button class="btn ghost" onclick='runCmd("ev")'>Full brief</button></div></div>`;
     h += `<div class="card"><h2>Every edge test</h2>${(R.log || []).map(r => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(r[1])}</b><span class="muted">${esc(r[0])} · ${esc(r[3])}</span></div><div class="r"><span class="pill ${V[r[2]] || ""}">${esc(r[2])}</span></div></div>`).join("") || `<div class="muted">no research log yet</div>`}
       <div class="muted">Newest first. AGU_MONITOR\\research\\research_log.json · /research in the chat.</div></div>`;
+    return h;
+  },
+  sys() {
+    const Y = S.sys2 || {}, sup = Y.sup || {}, F = Y.files || {};
+    const supRow = (k, label) => { const v = sup[k]; const ok = v && v[0] != null && v[0] <= 35;
+      return `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span><span class="dot ${ok ? "ok" : "down"}" style="display:inline-block"></span> <b>${label}</b></span><span class="muted">${v ? esc(v[1]) + " · " + v[0] + " min ago" : "never started"}</span></div><div class="r">${ok ? "" : `<button class="btn" onclick='send({a:"sup_start",kind:${JSON.stringify(k)}}, "Start the ${label} supervisor?")'>Start</button>`}</div></div>`; };
+    const pill = st => st === "up" ? "g" : (st === "PAUSED" || st === "stopped(weekend)") ? "r" : st === "starting" ? "y" : "";
+    let h = `<div class="card"><h2>Supervisors</h2>${supRow("monitors", "Always-on monitors")}${supRow("supervisor", "cTrader runners")}
+      <div class="muted">They start every program below and restart it if it stops. The runners wait for cTrader to be logged in.</div></div>`;
+    h += `<div class="card"><h2>Programs</h2>${(Y.jobs || []).map(j => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span><b>${esc(j[0])}</b> <span class="pill ${pill(j[1])}">${esc(j[1] === "?" ? "not started yet" : j[1])}</span></span><span class="muted">${j[4] ? (j[2] == null ? "no log" : "log written " + (j[2] < 120 ? j[2] + " min" : j[2] < 2880 ? Math.round(j[2] / 60) + " h" : Math.round(j[2] / 1440) + " days") + " ago") : "cBot launcher (restart in cTrader)"}</span></div><div class="r" style="display:flex;gap:6px">${j[4] ? `<button class="btn ghost" onclick='quick({a:"job_log",name:${JSON.stringify(j[0])}})'>Log</button><button class="btn ghost" onclick='send({a:"job_restart",name:${JSON.stringify(j[0])}}, "Restart ${esc(j[0])}? (it stops now; its supervisor starts it again within about a minute)")'>Restart</button>` : ""}</div></div>`).join("") || `<div class="muted">watchers.json not found</div>`}</div>`;
+    h += `<div class="card"><h2>File check</h2><div class="row"><div class="l">Scripts delivered by Claude</div><div class="r"><span class="pill ${F.bad && F.bad.length ? "r" : "g"}">${F.n ? (F.n - (F.bad || []).length) + " / " + F.n + " match" : "no list yet"}</span></div></div>
+      ${(F.bad || []).map(b => `<div class="row"><div class="l muted">${esc(b)}</div><div class="r"><span class="pill r">different</span></div></div>`).join("")}
+      <div class="muted">Each file's fingerprint (SHA-256) against AGU_MONITOR\\file_manifest.json, updated ${esc(F.t || "–")}. Replaces the PowerShell check blocks.</div></div>`;
     return h;
   },
   cmds() {
