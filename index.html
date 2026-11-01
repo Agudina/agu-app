@@ -50,11 +50,23 @@
   .empty { color: var(--hint); text-align: center; padding: 30px 10px; }
   .bar { height: 6px; border-radius: 3px; background: rgba(127,127,127,.2); overflow: hidden; margin-top: 4px; }
   .bar i { display: block; height: 100%; background: var(--accent); }
+  .fold > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .fold > summary::-webkit-details-marker { display: none; }
+  .fold > summary::after { content: "show ▾"; color: var(--hint); font-size: 12px; flex: 0 0 auto; }
+  .fold[open] > summary::after { content: "hide ▴"; }
+  .fold > summary h2 { margin: 0; }
+  .how { margin: 0 2px 10px; }
+  .how > summary { color: var(--accent); font-size: 13px; }
+  .how > div { color: var(--hint); font-size: 12px; margin-top: 6px; line-height: 1.45; }
+  .sub { color: var(--hint); font-size: 12px; margin-top: 2px; }
+  .glance { padding: 6px 0; border-bottom: 1px solid rgba(127,127,127,.12); }
+  .glance:last-child { border-bottom: 0; }
+  .glance b { display: block; font-size: 13px; color: var(--hint); font-weight: 600; margin-bottom: 2px; }
 </style>
 </head>
 <body>
 <header>
-  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v10.1 · 1 Nov</span></h1>
+  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v13 · 1 Nov</span></h1>
   <div class="sub" id="stamp">loading…</div>
 </header>
 <nav id="tabs"></nav>
@@ -66,7 +78,15 @@ const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","
 let S = null, tab = "home";
 // V10: Agu Zones backtest detail (static -- research\\zone_detail.json, 1 Nov 2026). Row = [zone, trades, avg bp, t, 1st half, 2nd half, win %, reversed bp, buys %]
 const ZONEDATA = {"1D":{"groups":{"All pairs":{"rows":[["more than 3% below",214,20.8,2.3,21.9,18.8,50,-37.0,100],["1.5-3% below",300,-5.7,-1.1,-4.9,-7.1,45,-0.7,100],["0-1.5% below",196,-9.6,-2.1,-13.1,-6.8,46,-2.5,98],["0-1.5% above",184,2.0,0.4,-6.2,4.6,52,-6.7,3],["1.5-3% above",272,-1.0,-0.2,-7.4,2.9,51,-10.3,0],["more than 3% above",188,14.8,2.0,13.1,19.6,55,-21.1,0]],"n":1354,"all":2.8,"t":1.1},"Non-EUR FX":{"rows":[["more than 3% below",141,13.1,1.2,3.2,31.2,46,-32.8,100],["1.5-3% below",214,-4.8,-0.9,-8.7,1.9,46,-1.0,100],["0-1.5% below",124,-7.9,-1.3,-11.9,-5.0,50,-4.6,98],["0-1.5% above",128,8.2,1.4,-1.3,11.1,56,-11.7,2],["1.5-3% above",187,-0.8,-0.2,-10.7,4.2,51,-8.5,0],["more than 3% above",98,14.4,1.4,10.2,35.5,55,-18.3,0]],"n":892,"all":2.4,"t":0.8},"EUR pairs":{"rows":[["more than 3% below",31,44.3,2.6,45.3,42.0,71,-54.1,100],["1.5-3% below",68,-20.6,-2.5,-19.0,-23.0,35,12.6,100],["0-1.5% below",61,-7.7,-1.1,-10.1,-4.9,41,2.1,100],["0-1.5% above",50,-6.5,-0.9,-8.7,-5.9,48,0.1,0],["1.5-3% above",58,-4.9,-0.5,-5.1,-4.7,45,-9.1,0],["more than 3% above",39,27.6,2.0,24.7,32.2,64,-39.2,0]],"n":307,"all":-0.1,"t":-0.0},"Indices":{"rows":[["more than 3% below",42,29.1,1.0,68.3,-34.7,48,-36.4,100],["1.5-3% below",18,40.2,1.1,96.9,-48.9,67,-44.9,100],["0-1.5% below",11,-39.4,-1.5,-96.6,-26.7,27,-3.1,100],["0-1.5% above",6,-58.5,-3.3,-67.0,-54.3,0,52.4,33],["1.5-3% above",27,5.6,0.3,1.7,11.3,59,-23.9,0],["more than 3% above",51,5.9,0.4,11.9,-5.0,47,-11.6,0]],"n":155,"all":10.4,"t":0.9}},"period":"Nov 2020 - Oct 2026","hold":"held to the Friday close"},"DL1":{"groups":{"All pairs":{"rows":[["more than 3% below",165,32.7,2.9,25.8,39.0,61,-53.4,100],["1.5-3% below",203,-3.6,-0.5,-7.7,1.4,50,-3.3,100],["0-1.5% below",77,1.8,0.2,-7.9,7.0,53,-8.4,97],["0-1.5% above",74,-7.7,-1.1,-9.6,-7.0,46,0.3,0],["1.5-3% above",201,7.7,1.3,-3.7,14.3,50,-15.2,0],["more than 3% above",227,2.5,0.3,-1.8,13.9,51,-19.1,0]],"n":947,"all":6.7,"t":1.9},"Non-EUR FX":{"rows":[["more than 3% below",117,29.8,2.5,15.9,42.9,60,-43.9,100],["1.5-3% below",174,-0.6,-0.1,-8.4,9.0,53,-6.5,100],["0-1.5% below",67,8.9,0.9,4.6,11.3,57,-16.2,99],["0-1.5% above",61,-11.2,-1.4,-6.9,-13.2,46,3.6,0],["1.5-3% above",160,9.8,1.5,-5.5,18.1,51,-16.0,0],["more than 3% above",154,-3.2,-0.4,-7.0,20.8,47,-12.4,0]],"n":733,"all":6.0,"t":1.6},"EUR pairs":{"rows":[["more than 3% below",13,50.7,1.7,55.5,46.5,69,-85.9,100],["1.5-3% below",22,-7.2,-0.4,-27.1,16.7,32,10.2,100],["0-1.5% below",6,-20.7,-0.7,-58.6,-13.2,33,20.8,100],["0-1.5% above",13,8.9,0.6,-34.8,16.9,46,-15.4,0],["1.5-3% above",33,-14.7,-1.0,-7.8,-19.7,39,3.3,0],["more than 3% above",27,18.8,1.1,25.3,0.3,63,-50.2,0]],"n":114,"all":4.5,"t":0.5},"Indices":{"rows":[["more than 3% below",35,35.9,1.0,50.0,24.0,60,-73.0,100],["1.5-3% below",7,-66.3,-1.0,91.2,-184.4,43,30.7,100],["0-1.5% below",4,-83.1,-1.8,-132.5,-33.7,25,68.8,75],["0-1.5% above",0,null,null,null,null,null,null,null],["1.5-3% above",8,56.2,1.7,34.9,77.4,75,-70.3,0],["more than 3% above",46,12.0,0.5,10.5,12.5,54,-20.9,0]],"n":100,"all":14.6,"t":0.9}},"period":"Feb 2021 - Oct 2026","hold":"held to the Friday close"},"4h":{"groups":{"Both indices":{"rows":[["more than 3% below",57,42.5,2.5,47.6,37.2,67,-48.4,86],["1.5-3% below",41,18.8,1.6,20.4,17.5,61,-24.9,76],["0-1.5% below",71,15.8,1.4,24.7,8.1,68,-21.9,90],["0-1.5% above",89,-2.8,-0.3,-9.5,3.3,54,-3.4,60],["1.5-3% above",69,3.4,0.4,1.6,7.1,49,-9.5,25],["more than 3% above",134,6.7,0.7,0.6,15.8,46,-12.7,16]],"n":461,"all":11.3,"t":2.5},"UK100":{"rows":[["more than 3% below",16,38.1,1.4,38.1,null,75,-44.3,100],["1.5-3% below",22,16.1,1.2,19.9,15.0,68,-22.3,73],["0-1.5% below",56,18.8,2.3,26.0,14.8,71,-25.0,96],["0-1.5% above",78,-0.6,-0.1,-15.8,13.2,54,-5.6,62],["1.5-3% above",46,0.7,0.1,-1.6,4.6,50,-6.9,15],["more than 3% above",40,8.3,0.9,10.1,-27.0,48,-14.5,0]],"n":258,"all":9.0,"t":2.3},"JPN225":{"rows":[["more than 3% below",41,44.2,2.0,59.2,37.2,63,-50.0,80],["1.5-3% below",19,22.0,1.1,20.6,25.9,53,-27.9,79],["0-1.5% below",15,4.7,0.1,22.8,-112.9,53,-10.6,67],["0-1.5% above",11,-18.2,-0.4,37.3,-64.4,55,12.3,45],["1.5-3% above",23,9.0,0.5,7.1,14.1,48,-14.8,43],["more than 3% above",94,6.1,0.5,-8.1,17.5,45,-12.0,22]],"n":203,"all":14.2,"t":1.6}},"period":"Oct 2025 - Oct 2026","hold":"its own 8-hour trades (halves = SELECT / TEST)"}};
+const ZONEV2 = {"1D":{"period":"Nov 2020 - Oct 2026","g":{"All pairs":[[211,20.0,2.2,20.7,18.8],[462,4.2,0.9,2.9,6.1]],"Non-EUR FX":[[140,13.5,1.3,3.6,31.2],[312,5.1,0.9,-1.3,14.7]],"EUR pairs":[[29,38.6,2.3,36.7,42.0],[109,-3.1,-0.5,-4.2,-1.4]],"Indices":[[42,29.1,1.0,68.3,-34.7],[41,16.3,0.6,56.9,-35.7]]},"p":[["AUDCAD",0.41,[2,-62.4,null],[13,6.7,0.4]],["AUDCHF",0.56,[14,14.3,0.4],[24,9.1,0.4]],["AUDJPY",0.6,[10,27.1,0.5],[15,18.7,0.5]],["AUDNZD",0.28,[2,52.3,null],[13,7.4,0.4]],["AUDUSD",0.59,[18,-3.4,-0.1],[33,-11.3,-0.6]],["AUS200",0.67,[21,-4.6,-0.2],[23,-8.0,-0.3]],["CADCHF",0.48,[11,50.0,1.5],[29,22.5,1.2]],["CADJPY",0.62,[21,-5.0,-0.2],[26,-12.9,-0.6]],["EURAUD",0.38,[10,1.5,0.1],[26,-19.5,-1.4]],["EURCAD",0.43,[1,45.9,null],[8,-10.7,-0.5]],["EURCHF",0.29,[5,37.7,1.0],[25,-0.2,-0.0]],["EURGBP",0.3,[0,null,null],[9,4.1,0.3]],["EURJPY",0.47,[9,49.7,1.5],[14,1.7,0.1]],["EURUSD",0.34,[4,105.6,2.8],[27,7.4,0.6]],["FRA40",0.99,[5,189.5,1.2],[4,138.8,0.7]],["GBPAUD",0.38,[13,-23.5,-1.0],[26,-28.8,-2.0]],["GBPCAD",0.39,[2,16.3,null],[18,-10.1,-0.7]],["GBPCHF",0.49,[9,38.5,0.7],[20,6.0,0.2]],["GBPJPY",0.51,[10,100.8,1.7],[18,81.4,2.2]],["GBPNZD",0.4,[5,-15.0,-0.4],[9,8.9,0.3]],["GBPUSD",0.39,[16,-5.4,-0.3],[32,-3.5,-0.3]],["NZDCAD",0.41,[7,18.4,0.7],[26,6.1,0.4]],["UK100",0.95,[16,23.2,0.6],[14,21.1,0.5]],["USDCAD",0.35,[0,null,null],[10,20.0,1.1]]]},"DL1":{"period":"Mar 2021 - Oct 2026","g":{"All pairs":[[162,29.5,2.6,18.6,39.7],[293,15.1,2.1,0.5,30.9]],"Non-EUR FX":[[117,29.8,2.5,15.1,44.1],[232,15.9,2.2,-0.1,34.0]],"EUR pairs":[[12,34.5,1.2,22.8,46.1],[29,-3.4,-0.2,-22.5,17.1]],"Indices":[[33,27.0,0.8,31.0,24.0],[32,26.2,0.7,31.0,22.4]]},"p":[["AUDCAD",0.39,[2,103.5,null],[17,-1.5,-0.1]],["AUDCHF",0.56,[14,7.9,0.2],[21,4.7,0.2]],["AUDJPY",0.64,[12,58.2,1.1],[16,46.2,1.1]],["AUDNZD",0.29,[2,52.3,null],[8,10.0,0.4]],["AUDUSD",0.59,[17,-13.7,-0.7],[27,-13.7,-0.9]],["AUS200",0.69,[21,13.9,0.4],[23,-0.2,-0.0]],["CADCHF",0.49,[8,62.7,1.4],[16,44.8,1.5]],["CADJPY",0.62,[13,36.1,0.9],[20,3.5,0.1]],["CHFJPY",0.43,[4,83.8,2.4],[8,67.2,3.3]],["EURAUD",0.38,[5,5.1,0.1],[12,-17.7,-0.8]],["EURCAD",0.45,[1,45.9,null],[7,-18.2,-0.8]],["EURJPY",0.5,[6,57.0,1.3],[10,24.2,0.7]],["GBPAUD",0.37,[8,-14.4,-0.4],[13,-25.1,-1.2]],["GBPCAD",0.36,[2,16.3,null],[14,16.1,1.0]],["GBPJPY",0.55,[6,39.7,0.6],[8,41.5,0.9]],["JPN225",1.17,[12,49.9,0.6],[9,93.6,1.0]],["NZDCAD",0.43,[6,48.5,1.0],[22,13.3,0.7]],["NZDJPY",0.59,[12,20.4,0.4],[19,40.1,1.2]],["USDCAD",0.33,[0,null,null],[8,17.2,0.9]],["USDJPY",0.57,[11,54.0,1.3],[15,28.4,0.9]]]},"4h":{"period":"Oct 2025 - Oct 2026","g":{"Both indices":[[49,45.8,2.5,47.9,43.5],[23,81.1,3.1,63.8,143.2]],"UK100":[[16,38.1,1.4,38.1,null],[16,38.1,1.4,38.1,null]],"JPN225":[[33,49.6,2.0,63.5,43.5],[7,179.3,4.2,269.6,143.2]]},"p":[["UK100",0.73,[16,38.1,1.4],[16,38.1,1.4]],["JPN225",1.661,[33,49.6,2.0],[7,179.3,4.2]]]}};
+const RESLOG = [["11-01","Agu Zones V2: deep dip in own daily swings","FAIL"],["11-01","Reversal on US500 / NAS100 (all zones)","FAIL"],["11-01","US index dip-buys, leak-free (18:30 NY entry)","CANDIDATE"],["11-01","US indices through Agu Zones (Deep Dip Hybrid)","CANDIDATE"],["11-01","What the US-family model learned","INFO"],["11-01","DL1 US family: US500, NAS100 (US30 pending)","FAIL"],["11-01","Plain deep dip: buy > 3% below 50-day, Fri","CANDIDATE"],["11-01","1D back: only > 3% from the 50-day, Fri hold","CANDIDATE"],["11-01","DL1 only > 3% below the 50-day (buys), Fri","CANDIDATE"],["11-01","EUR reversal only 0-3% below the 50-day","CANDIDATE"],["11-01","Deep dip > 3% below 50-day (all systems)","CANDIDATE"],["11-01","4h by distance from the 50-day","PASS"],["11-01","EUR 1.5-3% danger zone on non-EUR pairs","FAIL"],["11-01","EUR reverse in STRONG trends (beyond 1.5%)","FAIL"],["11-01","EUR below 50-day > 3%: model dip-buys","CANDIDATE"],["11-01","EUR 1.5-3% below 50-day: model buys / reverse","CANDIDATE"],["11-01","PLAN: EUR pairs on their own account if back","PLAN"],["11-01","Four scenarios x market state (paper + test)","RUNNING"],["11-01","DL1 buys in DOWN markets, held to Friday","CANDIDATE"],["11-01","DL1 reversed in SIDEWAYS markets, Friday","CANDIDATE"],["11-01","EUR with the trend, held to Friday","FAIL"],["11-01","DL1 market state (50-day): skip/reverse sideways","CANDIDATE"],["11-01","1D EUR: switch reverse/model by market state","FAIL"],["11-01","DL1 hold to Friday, exact live entries","PASS"],["11-01","Reverse rule on DL1 (all pairs)","FAIL"],["11-01","EUR reverse: trending vs sideways markets","FAIL"],["11-01","EUR trend rule on 1D signal days, Friday hold","FAIL"],["11-01","Deep learning vs LightGBM (1D families)","PASS"],["11-01","DL1 stop size, EUR without stop","PASS"],["11-01","4h stop + take-profit replay","FIXED"],["11-01","1D live stop/target replay","FIXED"],["11-01","Fading-trend detector (40 markets)","CANDIDATE"],["11-01","1D 5-day + yesterday trend filter / flip","FAIL"],["11-01","4h weak-spot filters (5 rules)","FAIL"],["11-01","Hybrid 5-day rule (EUR / US / FX)","FAIL"],["11-01","EUR reverse rule, Friday hold (paper)","RUNNING"],["10-30","4h on US500 / NAS100 / US30","FAIL"],["10-30","4h UK100 and JPN225","LIVE"],["10","Gold 50-day + 4h trend buy rule","LIVE"],["10","Index session/month-turn/sell-off/dip/FX fade","FAIL"],["10","WTI, USDJPY trend-buy, dip rule","RUNNING"],["10-07","EV research bot (lithium, cobalt, manganese)","FAIL"]];   // V13: built in; the snapshot sends only newer tests
+const APPDICT_SHA = "bd4de8b17ac9a318";   // build_app_dict.py -- must match AGU_MONITOR\\app_dict.txt
+const APPDICT = "{\"rev\":{\"r\":[[\"Agu Zones V2 \\u00b7 1D (>4 own swings below)\",[0,0,0],0,[[\"V\",0,0]]],[\"Agu Zones V2 \\u00b7 DL1 (>4 own swings below)\",[0,0,0],0,[[\"X\",0,0],[\"V\",0,0]]]],\"ps\":[[\"AUDUSD\",0,0,\"W\",0,0,\"W\"],[\"GBPJPY\",0,0,\"F\",0,0,\"S\"]]}}{\"v\":0,\"t\":\"2026-11-01 19:26\",\"mkt\":false,\"sig\":false,\"health\":[{\"n\":\"cTrader main (copy master)\",\"s\":\"idle\",\"age\":0,\"why\":\"\"},{\"n\":\"Gold price feed\",\"s\":\"idle\",\"age\":0,\"why\":\"\"},{\"n\":\"Spread logger\",\"s\":\"idle\",\"age\":0,\"why\":\"\"},{\"n\":\"4h runner\",\"s\":\"idle\",\"age\":0,\"why\":\"\"},{\"n\":\"4h copy master\",\"s\":\"idle\",\"age\":0,\"why\":\"\"},{\"n\":\"DL1 trader\",\"s\":\"idle\",\"age\":0,\"why\":\"\"},{\"n\":\"DL1 copy master\",\"s\":\"idle\",\"age\":0,\"why\":\"\"},{\"n\":\"Gold cBot\",\"s\":\"ok\",\"age\":0,\"why\":\"\"},{\"n\":\"Wage copier\",\"s\":\"ok\",\"age\":0,\"why\":\"\"},{\"n\":\"Shadow manager\",\"s\":\"ok\",\"age\":0,\"why\":\"\"},{\"n\":\"Decay monitor\",\"s\":\"ok\",\"age\":0,\"why\":\"\"}],\"sys\":{\"1D\":{\"v\":\"TOO EARLY\",\"n\":0,\"avg\":0,\"win\":0,\"test\":null,\"open\":0,\"net\":0,\"fill\":0,\"budget\":0},\"4h\":{\"v\":\"TOO EARLY\",\"n\":0,\"avg\":0,\"win\":0,\"test\":0,\"open\":0,\"net\":0,\"fill\":0,\"budget\":0},\"DL1\":{\"v\":\"TOO EARLY\",\"n\":0,\"avg\":0,\"win\":0,\"test\":0,\"open\":0,\"net\":0,\"fill\":0,\"budget\":0}},\"decay_t\":\"2026-11-01T12:05\",\"acct\":[{\"n\":\"\",\"a\":0,\"ok\":true,\"bal\":0,\"risk\":0,\"pos\":[]}],\"shadow\":[[\"1D\",\"AUS200\",\"2026-10-30\",\"manual: 1D fully to shadow -- index edge unproven (only FRA4\",0,0,0,0,0,null],[\"1D\",\"CADCHF\",\"2026-10-30\",\"manual: 1D FX review -- all 1D FX pairs to shadow (EUR faile\",0,0,0,0,0,null],[\"1D\",\"CADJPY\",\"2026-10-30\",\"manual: 1D FX review -- all 1D FX pairs to shadow (EUR faile\",0,0,0,0,0,null],[\"1D\",\"CHFJPY\",\"2026-10-30\",\"manual: 1D FX review -- all 1D FX pairs to shadow (EUR faile\",0,0,0,0,0,null],[\"1D\",\"EURCAD\",\"2026-10-30\",\"manual: EUR review (all EUR pairs to shadow)\",0,0,0,0,0,null],[\"1D\",\"EURCHF\",\"2026-10-30\",\"manual: EUR review (all EUR pairs to shadow)\",0,0,0,0,0,null],[\"1D\",\"EURJPY\",\"2026-10-30\",\"manual: EUR review (all EUR pairs to shadow)\",0,0,0,0,0,null],[\"1D\",\"FRA40\",\"2026-10-30\",\"manual: 1D fully to shadow -- index edge unproven (only FRA4\",0,0,0,0,0,null],[\"1D\",\"GBPCAD\",\"2026-10-30\",\"manual: 1D FX review -- all 1D FX pairs to shadow (EUR faile\",0,0,0,0,0,null],[\"1D\",\"GBPJPY\",\"2026-10-30\",\"manual: 1D FX review -- all 1D FX pairs to shadow (EUR faile\",0,0,0,0,0,null],[\"1D\",\"JPN225\",\"2026-10-30\",\"manual: 1D fully to shadow -- index edge unproven (only FRA4\",0,0,0,0,0,null],[\"1D\",\"NZDCAD\",\"2026-10-30\",\"manual: 1D FX review -- all 1D FX pairs to shadow (EUR faile\",0,0,0,0,0,null],[\"1D\",\"UK100\",\"2026-10-30\",\"manual: 1D fully to shadow -- index edge unproven (only FRA4\",0,0,0,0,0,null],[\"DL1\",\"EURAUD\",\"2026-10-30\",\"manual: EUR review (all EUR pairs to shadow)\",0,0,0,0,0,null],[\"DL1\",\"EURCAD\",\"2026-10-30\",\"manual: EUR review (all EUR pairs to shadow)\",0,0,0,0,0,null],[\"DL1\",\"EURJPY\",\"2026-10-30\",\"manual: EUR review (all EUR pairs to shadow)\",0,0,0,0,0,null]],\"grads\":{\"1D\":[],\"DL1\":[]},\"wage\":{\"bal\":0,\"eq\":0,\"week_n\":0,\"week_net\":0,\"float\":0,\"take\":0,\"open\":0},\"ctl\":{\"gold_risk\":0,\"gold_on\":true,\"gold_shadow\":false,\"wage\":{\"4h\":{\"on\":true,\"risk\":0},\"1D graduates\":{\"on\":true,\"risk\":0},\"DL1 graduates\":{\"on\":true,\"risk\":0}},\"dl1_max\":0,\"h4_live\":[\"JPN225\",\"UK100\"],\"h4_paused\":[\"AUDCAD\",\"AUDJPY\",\"EURJPY\",\"GBPJPY\"],\"h4_tp\":false},\"gold\":{\"status\":\"NOT YET\",\"trend\":\"DOWN\",\"close\":0,\"ma50\":0,\"gap50\":0,\"decided\":\"2026-10-29T21:00\",\"decision\":\"NO TRADE\",\"n\":0,\"wins\":0,\"net\":0,\"risk\":0,\"on\":true,\"bal\":0,\"open\":[],\"test\":{\"r\":0,\"win\":0,\"n\":0,\"span\":\"2020-26\",\"note\":\"built on that history; consistent in both halves\"}},\"calc\":{\"1D\":{\"n\":0,\"m\":0,\"sd\":0,\"se\":0,\"t\":0,\"en\":0,\"need\":0,\"win\":0,\"aw\":0,\"al\":0,\"pf\":0,\"h1\":0,\"h2\":0,\"usd\":0},\"4h\":{\"n\":0,\"m\":0,\"sd\":0,\"se\":0,\"t\":0,\"en\":0,\"need\":0,\"win\":0,\"aw\":0,\"al\":0,\"pf\":0,\"h1\":0,\"h2\":0,\"usd\":0},\"DL1\":{\"n\":0,\"m\":0,\"sd\":0,\"se\":0,\"t\":0,\"en\":0,\"need\":null,\"win\":0,\"aw\":0,\"al\":0,\"pf\":0,\"h1\":0,\"h2\":0,\"usd\":0}},\"rev\":{\"t\":\"2026-11-01T19:14\",\"r\":[[\"DL1 1 MODEL non-EUR FX\",[0,0,null],0,[[\"B\",0,0],[\"D\",0,0]]],[\"DL1 2 MODEL EUR\",[0,0,0],[0,0,0],[[\"B\",0,0,0,0],[\"D\",0,0,0,0]]],[\"DL1 3 REVERSE non-EUR FX\",[0,0,null],0,[[\"B\",0,0],[\"D\",0,0]]],[\"DL1 4 REVERSE EUR\",[0,0,0],[0,0,0],[[\"B\",0,0,0,0],[\"D\",0,0,0,0]]],[\"1D 1 MODEL non-EUR FX\",[0,0,0],0,[[\"D\",0,0]]],[\"1D 2 MODEL EUR\",[0,0,0],[0,0,0],[[\"B\",0,0,0,0],[\"D\",0,0,0,0]]],[\"1D 3 REVERSE non-EUR FX\",[0,0,0],0,[[\"D\",0,0]]],[\"1D 4 REVERSE EUR\",[0,0,0],[0,0,0],[[\"B\",0,0,0,0],[\"D\",0,0,0,0]]],[\"Deep Dip Hybrid \\u00b7 1D (>3% from 50-day)\",[0,0,0],0,[[\"X\",0,0],[\"D\",0,0]]],[\"Deep Dip Hybrid \\u00b7 DL1 (>3% below)\",[0,null,null],0,[]],[\"EUR REVERSAL (0-3% below)\",[0,0,0],0,[[\"B\",0,0],[\"D\",0,0]]],[\"4h live (UK100, JPN225)\",[0,0,0],0,[[\"B\",0,0],[\"X\",0,0],[\"U\",0,0],[\"D\",0,0],[\"S\",0,0]]]],\"ps\":[]},\"res\":{\"log\":[],\"ev\":{\"t\":\"2026-11-01\",\"growth\":0,\"share\":0,\"year\":0,\"back\":\"strong\",\"th\":[[\"cobalt\",\"no proven edge\",0,0,0,\"strengthening\",0,false,\"Last observation 2025-06-01.\"],[\"lithium\",\"no proven edge\",0,0,0,\"weakening\",0,false,\"Last observation 2025-06-01.\"],[\"manganese\",\"no proven edge\",0,0,0,\"mixed\",0,false,\"Last observation 2025-06-01.\"]],\"gate\":false},\"us\":{\"US500\":{\"m\":\"gru\",\"n\":0,\"bp\":0,\"t\":0,\"mp\":0,\"lg\":0,\"ic\":0,\"ok\":[0,0,0,0,0],\"pass1\":false},\"NAS100\":{\"m\":\"gru\",\"n\":0,\"bp\":0,\"t\":0,\"mp\":0,\"lg\":0,\"ic\":0,\"ok\":[0,0,0,0,0],\"pass1\":false},\"US30\":null}},\"sys2\":{\"sup\":{\"monitors\":[0,\"status: signals OFF (Friday close -> Sunday 22:00 UTC) | edge_monitor\"],\"supervisor\":[0,\"still waiting for cTrader (the always-on monitors run on their own)\"]},\"jobs\":[[\"1D\",\"?\",0,0,0],[\"4h\",\"?\",0,0,0],[\"DL1\",\"?\",0,0,0],[\"cross_daily\",\"?\",0,0,0],[\"edge_monitor\",\"up\",0,0,0],[\"gold_bot\",\"up\",0,0,0],[\"gold_auto\",\"up\",0,0,0],[\"gold_cbot\",\"up\",null,0,0],[\"trend_forward\",\"up\",0,0,0],[\"dip_forward\",\"up\",0,0,0],[\"dl1_cbot\",\"up\",null,0,0],[\"h4_cbot\",\"up\",null,0,0],[\"decay_monitor\",\"up\",0,0,0],[\"shadow_manager\",\"up\",0,0,0],[\"wage_copy\",\"up\",null,0,0],[\"us_dip_shadow\",\"?\",null,0,0]],\"files\":{\"n\":0,\"bad\":[\"AGU_MONITOR\\\\reverse_ledger.py\",\"AGU_MONITOR\\\\app_snapshot.py\",\"AGU_MONITOR\\\\market_state.py\"],\"t\":\"2026-11-01T18:55\"}},\"ms\":{\"t\":\"2026-11-01T18:24\",\"p\":[[\"JPN225\",\"D\",0,\"D\",\"14\"],[\"EURCAD\",\"D\",0,\"E\",\"1D\"],[\"NZDCAD\",\"D\",0,\"N\",\"1D\"],[\"EURCHF\",\"D\",0,\"E\",\"1\"],[\"FRA40\",\"D\",0,\"N\",\"1\"],[\"EURAUD\",\"D\",0,\"E\",\"D\"],[\"EURJPY\",\"D\",0,\"E\",\"1D\"],[\"AUDCAD\",\"D\",0,\"N\",\"D\"],[\"NZDJPY\",\"D\",0,\"N\",\"D\"],[\"USDCAD\",\"S\",0,\"N\",\"D\"],[\"GBPCAD\",\"D\",0,\"N\",\"1D\"],[\"AUDCHF\",\"S\",0,\"N\",\"D\"],[\"AUDUSD\",\"D\",0,\"N\",\"D\"],[\"UK100\",\"D\",0,\"H\",\"14\"],[\"AUDJPY\",\"D\",0,\"N\",\"D\"],[\"USDJPY\",\"S\",0,\"N\",\"D\"],[\"CHFJPY\",\"S\",0,\"N\",\"1D\"],[\"GBPJPY\",\"S\",0,\"N\",\"1D\"],[\"GBPAUD\",\"U\",0,\"N\",\"D\"],[\"CADCHF\",\"U\",0,\"N\",\"1D\"],[\"AUDNZD\",\"U\",0,\"N\",\"D\"],[\"CADJPY\",\"S\",0,\"N\",\"1D\"],[\"AUS200\",\"S\",0,\"N\",\"1\"]]}}";
 const zsel = {"1D": "All pairs", "DL1": "All pairs", "4h": "Both indices"};
+const openSet = new Set();   // V12: which fold-out sections are open (kept across re-renders)
+const fold = (id, title, inner, card = true) => `<details class="fold ${card ? "card" : ""}" id="${id}" ${openSet.has(id) ? "open" : ""} ontoggle="this.open ? openSet.add(this.id) : openSet.delete(this.id)"><summary>${title}</summary>${inner}</details>`;
+const how = (id, text) => `<details class="how" id="${id}" ${openSet.has(id) ? "open" : ""} ontoggle="this.open ? openSet.add(this.id) : openSet.delete(this.id)"><summary>How to read this</summary><div>${text}</div></details>`;
+const tPill = t => t == null ? `<span class="pill">t –</span>` : `<span class="pill ${t >= 2 ? "g" : t <= -2 ? "r" : t >= 1 ? "y" : ""}">t ${sgn(t, 1)}</span>`;
 const $ = (h) => { const d = document.createElement("div"); d.innerHTML = h.trim(); return d.firstChild; };
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const money = (v) => v == null ? "–" : (v < 0 ? "-$" : "$") + Math.abs(+v).toFixed(2);
@@ -77,8 +97,18 @@ async function decode() {
   if (!m) throw new Error("no data in the link -- open the app from the bot's 📱 button (send /app)");
   let b64 = m[1].replace(/-/g, "+").replace(/_/g, "/"); while (b64.length % 4) b64 += "=";
   const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-  const ds = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
-  return JSON.parse(await new Response(ds).text());
+  if (!/[#&]z=1/.test(location.hash)) {
+    const ds = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+    return JSON.parse(await new Response(ds).text());
+  }
+  // V13: the data was packed against the shared dictionary -- put the dictionary in front, unpack, then cut it off
+  const Dd = new TextEncoder().encode(APPDICT), parts = [new Uint8Array([0x78, 0x01])];
+  for (let i = 0; i < Dd.length; i += 65535) { const ch = Dd.subarray(i, i + 65535), n = ch.length;
+    parts.push(new Uint8Array([0, n & 255, n >> 8, ~n & 255, (~n >> 8) & 255]), ch); }
+  parts.push(bytes);
+  const ds = new Blob(parts).stream().pipeThrough(new DecompressionStream("deflate"));
+  const out = new Uint8Array(await new Response(ds).arrayBuffer());
+  return JSON.parse(new TextDecoder().decode(out.subarray(Dd.length)));
 }
 
 function send(action, question) {
@@ -176,24 +206,31 @@ const VIEWS = {
   },
   calc() {
     const C = S.calc || {}, R = S.rev;
-    let h = `<div class="card"><h2>Your own numbers</h2><div class="muted">Trade results in bp, e.g. 12 -30 8 15</div>
-      <textarea id="cx" rows="2" style="width:100%;margin:6px 0;padding:8px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text)"></textarea>
-      <button class="btn" onclick="calcTyped()">Calculate</button><div id="cout" style="margin-top:8px"></div></div>`;
-    h += ["1D", "4h", "DL1"].map(k => `<div class="card"><h2>${k} live · gross bp</h2>${calcRows(C[k], (C[k] || {}).usd)}</div>`).join("");
-    if (R && R.r) {   // V10: compact paper records [name, [n, avg, t] base, [n, avg, t] rule, [[code, n, avg, n, avg]]]
-      const SC = {U: "uptrend", D: "downtrend", S: "sideways", B: "1.5-3% below", X: ">3% below"};
-      const ln = q => !q || !q[0] ? "no closed trades yet" : `${q[0]} trades · ${sgn(q[1])} bp · t ${q[2] == null ? "–" : sgn(q[2], 1)}`;
-      const groups = [["Deep Dip Hybrid & EUR rules", x => /Deep Dip|EUR REVERSAL/.test(x)], ["DL1 · four scenarios", x => x.startsWith("DL1 ")], ["1D · four scenarios", x => x.startsWith("1D ")], ["4h live", x => x.startsWith("4h")]];
-      h += groups.map(([gname, f]) => { const rs = R.r.filter(r => f(r[0])); if (!rs.length) return "";
-        return `<div class="card"><h2>${gname}</h2>${rs.map(r => { const same = r[1][0] === r[2][0] && r[1][1] === r[2][1];
-          const two = /MODEL/.test(r[0]) ? ["2-day exit", "Friday hold"] : /REVERSE /.test(r[0]) ? ["reversed, 2-day", "reversed, Friday"] : ["", ""];
-          return `<div style="padding:7px 0;border-bottom:1px solid rgba(127,127,127,.12)"><b>${esc(r[0].replace(/^(DL1|1D) (\d) /, "$2 · "))}</b>
-            ${same ? `<div class="row" style="border:0;padding:2px 0"><div class="l muted">result</div><div class="r ${r[2][1] > 0 ? "pos" : r[2][1] < 0 ? "neg" : ""}">${ln(r[2])}</div></div>`
-                   : `<div class="row" style="border:0;padding:2px 0"><div class="l muted">${two[0]}</div><div class="r">${ln(r[1])}</div></div><div class="row" style="border:0;padding:2px 0"><div class="l muted">${two[1]}</div><div class="r ${r[2][1] > 0 ? "pos" : r[2][1] < 0 ? "neg" : ""}">${ln(r[2])}</div></div>`}
-            ${r[3].map(x => `<div class="muted" style="padding-left:10px">· ${SC[x[0]] || x[0]}: ${same ? (x[3] ? x[3] + " · " + sgn(x[4]) + " bp" : "–") : (x[1] ? x[1] + " · " + sgn(x[2]) : "–") + " | " + (x[3] ? x[3] + " · " + sgn(x[4]) : "–") + " bp"}</div>`).join("")}</div>`; }).join("")}</div>`; }).join("");
-      h += `<div class="muted" style="margin:0 4px 8px">Paper records (no money), live signals only, updated ${esc(R.t)} UTC. Judge a line at 30+ trades with t ≥ 2. 1-4 = model non-EUR · model EUR · reversed non-EUR · reversed EUR (FX only).</div>`;
+    const verdictT = (o) => !o || !o.n || o.n < 2 ? ["too few trades", ""] : o.t >= 2 ? ["proven", "g"] : o.t >= 1 ? ["promising", "y"] : o.t >= 0 ? ["not proven", ""] : ["losing", "r"];
+    let h = how("how-calc", "Top: each live system's real trades so far -- average per trade (bp = 0.01%), t (how sure: 2 or more = unlikely to be luck) and money. Tap a system for the full worked calculation. Below: the paper records -- rules tracked with no money on the live signals. Judge a record only at 30+ trades with t ≥ 2.");
+    h += `<div class="card"><h2>Live systems</h2>${["4h", "DL1", "1D"].map(k => { const o = C[k] || {}; const [vt, vc] = verdictT(o);
+      return fold("calc-" + k, `<span><b>${k}</b> <span class="pill ${vc}">${vt}</span><div class="sub">${o.n || 0} trades · ${o.m == null ? "–" : sgn(o.m) + " bp"} · t ${o.t == null ? "–" : sgn(o.t, 1)} · ${money(o.usd)}</div></span>`,
+        `<div style="margin-top:6px">${calcRows(o, o.usd)}</div>`, false); }).join(`<div style="height:1px;background:rgba(127,127,127,.12);margin:6px 0"></div>`)}</div>`;
+    if (R && R.r) {
+      const SC = {U: "uptrend", D: "downtrend", S: "sideways", B: "1.5-3% below the 50-day", X: "more than 3% below", V: "more than 4 own swings below"};
+      const nice = k => k.replace(/^(DL1|1D) 1 MODEL non-EUR FX$/, "$1 · model · non-EUR FX").replace(/^(DL1|1D) 2 MODEL EUR$/, "$1 · model · EUR pairs")
+        .replace(/^(DL1|1D) 3 REVERSE non-EUR FX$/, "$1 · reversed · non-EUR FX").replace(/^(DL1|1D) 4 REVERSE EUR$/, "$1 · reversed · EUR pairs");
+      const ln = q => !q || !q[0] ? "no trades yet" : `${q[0]} · ${sgn(q[1])} bp`;
+      const groups = [["Deep Dip Hybrid & EUR rule", x => /Deep Dip|EUR REVERSAL/.test(x)], ["DL1 · four scenarios", x => x.startsWith("DL1 ")], ["1D · four scenarios", x => x.startsWith("1D ")], ["Agu Zones V2 · own swings (shadow test)", x => x.startsWith("Agu Zones V2")], ["4h · live trades by zone", x => x.startsWith("4h")]];
+      h += `<div class="card"><h2>Paper records (no money)</h2><div class="sub" style="margin-bottom:4px">updated ${esc(R.t)} UTC · tap a group for 2-day vs Friday and the market-state split</div>`;
+      h += groups.map(([gname, f], gi) => { const rs = R.r.filter(r => f(r[0])); if (!rs.length) return "";
+        const head = rs.map(r => { const same = r[1][0] === r[2][0] && r[1][1] === r[2][1]; const main = r[2];
+          return `<div class="row"><div class="l" style="min-width:0">${esc(nice(r[0]))}</div><div class="r">${main && main[0] ? `<b class="${main[1] > 0 ? "pos" : main[1] < 0 ? "neg" : ""}">${sgn(main[1])} bp</b> <span class="muted">${main[0]}</span> ${tPill(main[2])}` : `<span class="muted">no trades yet</span>`}</div></div>`; }).join("");
+        const detail = rs.map(r => { const same = r[1][0] === r[2][0] && r[1][1] === r[2][1];
+          const two = /MODEL/.test(r[0]) ? ["2-day exit (live rule)", "held to Friday"] : /REVERSE /.test(r[0]) ? ["reversed, 2-day", "reversed, held to Friday"] : ["2-day exit", "held to Friday"];
+          return `<div class="glance"><b>${esc(nice(r[0]))}</b>${same ? `<div>${ln(r[2])} ${tPill(r[2][2])}</div>` : `<div class="sub">${two[0]}: ${ln(r[1])} · ${two[1]}: ${ln(r[2])}</div>`}
+            ${r[3].map(x => `<div class="sub">· ${SC[x[0]] || x[0]}: ${same ? (x[3] ? x[3] + " · " + sgn(x[4]) + " bp" : "–") : "2-day " + (x[1] ? x[1] + " · " + sgn(x[2]) : "–") + " | Friday " + (x[3] ? x[3] + " · " + sgn(x[4]) : "–")}</div>`).join("")}</div>`; }).join("");
+        return `<div style="margin-top:8px"><div class="sub" style="font-weight:600;color:var(--text)">${gname}</div>${head}${fold("pr-" + gi, `<span class="sub">details</span>`, detail, false)}</div>`; }).join("");
+      h += `</div>`;
     }
-    h += `<div class="muted" style="text-align:center">t ≥ 2 = proven · "trades needed" = how many trades this edge needs to prove itself</div>`;
+    h += fold("calc-own", `<h2>Calculator · your own numbers</h2>`, `<div class="sub">Trade results in bp, e.g. 12 -30 8 15</div>
+      <textarea id="cx" rows="2" style="width:100%;margin:6px 0;padding:8px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text)"></textarea>
+      <button class="btn" onclick="calcTyped()">Calculate</button><div id="cout" style="margin-top:8px"></div>`);
     return h;
   },
   mkt() {
@@ -204,65 +241,108 @@ const VIEWS = {
     const bandOf = g => g <= -3 ? 0 : g <= -1.5 ? 1 : g <= 0 ? 2 : g <= 1.5 ? 3 : g <= 3 ? 4 : 5;
     const groupOf = (sysn, p) => sysn === "4h" ? p : p.includes("EUR") ? "EUR pairs" : IDX.has(p) ? "Indices" : "Non-EUR FX";
     const verdict = row => { const [lab, n, avg, t, h1, h2, win, rev] = row || [];
-      if (!n || n < 20) return ["too few trades", ""];
-      if (avg >= 5 && h1 > 0 && h2 > 0 && t >= 2) return ["FOLLOW · strong", "g"];
-      if (avg >= 5 && h1 > 0 && h2 > 0 && t >= 1) return ["FOLLOW · weak", "g"];
-      if (rev >= 5 && avg < 0) return ["REVERSE · candidate", "y"];
-      return ["SKIP · no steady edge", "r"]; };
-    const STATUS = {"1D": "all in shadow (paper only)", "DL1": "non-EUR live · EUR pairs in shadow", "4h": "live"};
+      if (!n || n < 20) return ["too few trades", "", 3];
+      if (avg >= 5 && h1 > 0 && h2 > 0 && t >= 2) return ["FOLLOW · strong", "g", 0];
+      if (avg >= 5 && h1 > 0 && h2 > 0 && t >= 1) return ["FOLLOW · weak", "g", 1];
+      if (rev >= 5 && avg < 0) return ["REVERSE · candidate", "y", 2];
+      return ["SKIP", "r", 4]; };
+    const STATUS = {"1D": "all in shadow", "DL1": "non-EUR live · EUR in shadow", "4h": "live"};
     const CODE = {"1D": "1", "DL1": "D", "4h": "4"};
-    let h = `<div class="muted" style="margin:2px 2px 8px">Agu Zones: for every pair, each system's backtest result at the pair's CURRENT distance from its 50-day average, and what that says to do. FOLLOW · strong = the model made +5 bp or more there, positive in both halves, t ≥ 2; FOLLOW · weak = the same with t 1-2. REVERSE = only trading the other way made money. SKIP = no steady edge either way. Deep Dip Hybrid = a model's buy only more than 3% below the average, held to Friday.</div>`;
-    h += `<div class="grid2"><div class="kpi"><span class="muted">Deep dips now (&lt; -3%)</span><span class="big pos">${M.p.filter(x => x[2] <= -3).length}</span></div><div class="kpi"><span class="muted">EUR 0-3% below</span><span class="big">${M.p.filter(x => x[0].includes("EUR") && x[2] <= 0 && x[2] > -3).length}</span></div></div>`;
+    const where = g => g <= -3 ? "more than 3% below" : g <= -1.5 ? "1.5-3% below" : g <= 0 ? "0-1.5% below" : g <= 1.5 ? "0-1.5% above" : g <= 3 ? "1.5-3% above" : "more than 3% above";
+    // every system's verdict for every pair it trades, right now
+    const V = {};
     for (const sysn of ["1D", "DL1", "4h"]) {
       const Dd = ZONEDATA[sysn]; if (!Dd) continue;
-      const pairs = M.p.filter(x => (x[4] || "").includes(CODE[sysn]));
-      h += `<div class="card"><h2>${sysn} · now</h2><div class="muted" style="margin-bottom:4px">${STATUS[sysn]} · backtest ${esc(Dd.period)}, ${esc(Dd.hold)}</div>
-        ${pairs.map(x => { const grp = Dd.groups[groupOf(sysn, x[0])] || Dd.groups[Object.keys(Dd.groups)[0]]; const row = grp.rows[bandOf(x[2])]; const [vt, vc] = verdict(row);
-          return `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span><b>${esc(x[0])}</b> <span class="pill ${x[1] === "U" ? "g" : x[1] === "D" ? "r" : ""}">${SN[x[1]] || x[1]}</span> <span class="muted">${sgn(x[2], 1)}%</span></span>
-            <span class="muted">${esc(row ? row[0] : "")}: model ${row && row[1] ? sgn(row[2]) + " bp (" + row[1] + " trades, t " + sgn(row[3], 1) + ")" : "no trades"}${row && row[7] != null ? " · reversed " + sgn(row[7]) : ""}</span></div>
-            <div class="r"><span class="pill ${vc}">${vt}</span></div></div>`; }).join("") || `<div class="muted">no pairs</div>`}</div>`;
+      V[sysn] = M.p.filter(x => (x[4] || "").includes(CODE[sysn])).map(x => { const grp = Dd.groups[groupOf(sysn, x[0])] || Object.values(Dd.groups)[0]; const row = grp.rows[bandOf(x[2])]; return {x, row, v: verdict(row)}; });
     }
+    const list = (arr) => arr.length ? arr.map(o => `${esc(o.x[0])} <span class="muted">${sgn(o.x[2], 1)}%</span>`).join(" · ") : `<span class="muted">none</span>`;
+    let h = how("how-zones", "Agu Zones compare each pair's price with its 50-day average (the % shown) and look up what each system's backtest did at that distance. FOLLOW · strong = the model made +5 bp or more per trade there, positive in both halves of the test, t ≥ 2 (weak = t 1-2). REVERSE = only trading the other way made money. SKIP = no steady edge. Deep Dip Hybrid = a model's buy taken only more than 3% below the average, held to Friday. Three layers are tracked side by side and judged together at the end: 1) the shared rule (fixed 3%), 2) V2 -- the same distance measured in each pair's own daily swings (\"sw\"; deep = more than 4 below), 3) each pair's own verdict once it has 20 shadow trades. Everything here is research -- live trading is unchanged (4h and DL1 non-EUR live, the rest in shadow).");
+    // 1. today at a glance
+    const strong = ["4h", "DL1", "1D"].map(k => [k, (V[k] || []).filter(o => o.v[2] === 0)]).filter(z => z[1].length);
+    const weak = ["4h", "DL1", "1D"].map(k => [k, (V[k] || []).filter(o => o.v[2] === 1)]).filter(z => z[1].length);
+    const rev = ["DL1", "1D"].map(k => [k, (V[k] || []).filter(o => o.v[2] === 2)]).filter(z => z[1].length);
+    const dips = M.p.filter(x => x[2] <= -3);
+    const v2 = M.p.filter(x => x[5] != null && x[5] <= -4).sort((a, b) => a[5] - b[5]);
+    const swTxt = x => x[5] != null ? ` · ${sgn(x[5], 1)} sw` : "";
+    h += `<div class="card"><h2>Today at a glance</h2>
+      <div class="glance"><b>Deep dips (more than 3% below the 50-day)</b>${dips.length ? dips.map(x => `${esc(x[0])} <span class="pos">${sgn(x[2], 1)}%</span>`).join(" · ") : `<span class="muted">none</span>`}</div>
+      <div class="glance"><b>Deep by own swings (V2 · shadow test)</b>${v2.length ? v2.map(x => `${esc(x[0])} <span class="pos">${sgn(x[5], 1)} sw</span>`).join(" · ") : `<span class="muted">none</span>`}</div>
+      <div class="glance"><b>FOLLOW · strong</b>${strong.length ? strong.map(([k, a]) => `<div>${k}: ${list(a)}</div>`).join("") : `<span class="muted">none right now</span>`}</div>
+      ${weak.length ? `<div class="glance"><b>FOLLOW · weak</b>${weak.map(([k, a]) => `<div>${k}: ${list(a)}</div>`).join("")}</div>` : ""}
+      <div class="glance"><b>REVERSE · candidates (shadow only)</b>${rev.length ? rev.map(([k, a]) => `<div>${k}: ${list(a)}</div>`).join("") : `<span class="muted">none right now</span>`}</div>
+      <div class="sub">Updated ${esc(M.t)} UTC (hourly).</div></div>`;
+    // 2. one card per system: actionable pairs first, SKIP folded away
+    for (const sysn of ["4h", "DL1", "1D"]) {
+      const arr = (V[sysn] || []).slice().sort((a, b) => a.v[2] - b.v[2] || a.x[2] - b.x[2]); if (!arr.length) continue;
+      const row = o => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span><b>${esc(o.x[0])}</b> <span class="pill ${o.x[1] === "U" ? "g" : o.x[1] === "D" ? "r" : ""}">${SN[o.x[1]] || o.x[1]}</span> <span class="muted">${sgn(o.x[2], 1)}%${swTxt(o.x)}</span></span>
+        <span class="sub">${where(o.x[2])}: model ${o.row && o.row[1] ? sgn(o.row[2]) + " bp, " + o.row[1] + " trades" : "no trades"}${o.row && o.row[7] != null ? " · reversed " + sgn(o.row[7]) : ""}</span></div><div class="r"><span class="pill ${o.v[1]}">${o.v[0]}</span></div></div>`;
+      const act = arr.filter(o => o.v[2] < 3), rest = arr.filter(o => o.v[2] >= 3);
+      h += `<div class="card"><h2>${sysn} · now <span class="muted" style="text-transform:none;font-weight:400">· ${STATUS[sysn]}</span></h2>
+        ${act.map(row).join("") || `<div class="muted">no pair in a FOLLOW or REVERSE zone right now</div>`}
+        ${rest.length ? fold("rest-" + sysn, `<span class="sub">${rest.length} pair${rest.length > 1 ? "s" : ""} with no steady edge / too few trades</span>`, rest.map(row).join(""), false) : ""}</div>`;
+    }
+    // 3. US indices (shadow)
+    const us = M.p.filter(x => (x[4] || "").includes("U"));
+    if (us.length) h += `<div class="card"><h2>US indices · now <span class="muted" style="text-transform:none;font-weight:400">· shadow</span></h2>
+      ${us.map(x => `<div class="row"><div class="l"><b>${esc(x[0])}</b> <span class="pill ${x[1] === "U" ? "g" : x[1] === "D" ? "r" : ""}">${SN[x[1]] || x[1]}</span> <span class="muted">${sgn(x[2], 1)}%${swTxt(x)}</span></div><div class="r"><span class="pill ${x[2] <= -3 ? "g" : ""}">${x[2] <= -3 ? "deep dip · shadow buys on" : "wait (needs below -3%)"}</span></div></div>`).join("")}
+      <div class="sub">Buys only, when the model says buy AND the index is more than 3% below its 50-day; entry 18:30 New York. Leak-free backtest: NAS100 +72 bp per trade (t 2.4); US500 +30 bp (t 1.1).</div></div>`;
+    // 3b. V13 layer 3: each pair's own deep-dip verdict (shadow)
+    const PS = (S.rev && S.rev.ps) || [], VP = {W: ["wait", ""], F: ["FOLLOW", "g"], S: ["SKIP", "r"]};
+    const cell = (n, a, v) => `<span class="pill ${VP[v] ? VP[v][1] : ""}">${VP[v] ? VP[v][0] : v}</span> <span class="muted">${n}/20${a != null ? " · " + sgn(a) + " bp" : ""}</span>`;
+    h += `<div class="card"><h2>Each pair's own verdict <span class="muted" style="text-transform:none;font-weight:400">· shadow</span></h2>
+      ${PS.length ? PS.map(r => `<div class="row"><div class="l"><b>${esc(r[0])}</b></div><div class="r" style="text-align:right"><div>3%: ${cell(r[1], r[2], r[3])}</div><div>swings: ${cell(r[4], r[5], r[6])}</div></div></div>`).join("")
+        : `<div class="muted">No deep-dip shadow trades yet.</div>`}
+      <div class="sub">Every deep-dip buy in shadow (1D, DL1, 4h, US indices), per pair, both ways of measuring "deep". At 20 trades a pair gets its own verdict: FOLLOW if it made money in both halves, else SKIP. Until then the shared rule decides.</div></div>`;
+    // 3c. V13: fixed 3% vs own swings -- the backtest (pre-registered test: failed; kept in shadow for the final judgment)
+    const q = a => !a || !a[0] ? "no trades" : `${a[0]} · <span style="font-weight:600" class="${a[1] > 0 ? "pos" : a[1] < 0 ? "neg" : ""}">${sgn(a[1])} bp</span> · t ${a[2] == null ? "–" : sgn(a[2])}${a.length > 3 ? ` · halves ${a[3] == null ? "–" : sgn(a[3], 0)} / ${a[4] == null ? "–" : sgn(a[4], 0)}` : ""}`;
+    const v2in = ["4h", "DL1", "1D"].map(k => { const Z = ZONEV2[k]; if (!Z) return "";
+      return `<div style="margin-top:8px"><div class="sub" style="font-weight:600;color:var(--text)">${k} <span class="muted" style="font-weight:400">· ${esc(Z.period)}</span></div>
+        ${Object.entries(Z.g).map(([g, [a, b]]) => `<div class="glance"><b>${esc(g)}</b><div class="sub">fixed 3%: ${q(a)}</div><div class="sub">own swings: ${q(b)}</div></div>`).join("")}
+        ${fold("v2p-" + k, `<span class="sub">per pair (${Z.p.length})</span>`, Z.p.map(r => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(r[0])}</b><span class="muted">1 swing = ${r[1] == null ? "–" : r[1].toFixed(2)}%</span></div><div class="r" style="text-align:right"><div class="sub">3%: ${q(r[2])}</div><div class="sub">swings: ${q(r[3])}</div></div></div>`).join(""), false)}</div>`; }).join("");
+    h += fold("bt-v2", `<h2>Fixed 3% vs own swings · backtest</h2>`, `<div class="sub" style="margin-top:6px">Model buys held to Friday, deep = more than 3% below (fixed) or more than 4 of the pair's own daily swings below. Test set before running: own swings had to match the fixed 3% per trade with at least as many trades, t ≥ 2 and both halves positive. <b>It failed</b> (1D +4.2 vs +20.0 bp, DL1 +15.1 vs +29.5); it stays in shadow for the final judgment.</div>${v2in}`);
+    // 4. the backtest tables, folded
     const zc = (lab) => lab.startsWith("more than 3% below") ? "ok" : lab.includes("above") ? "idle" : "down";
-    h += `<div class="muted" style="margin:10px 4px 4px"><b>The backtest behind it</b> -- one table per system; pick the pair group.</div>`;
-    for (const sysn of ["1D", "DL1", "4h"]) {
+    for (const sysn of ["4h", "DL1", "1D"]) {
       const Dd = ZONEDATA[sysn]; if (!Dd) continue;
       const g = Dd.groups[zsel[sysn]] || Object.values(Dd.groups)[0];
-      h += `<div class="card"><h2>${sysn} · distance from the 50-day</h2>
-        <div class="muted">${esc(Dd.period)} · ${esc(Dd.hold)} · backtest, per trade after costs</div>
+      const inner = `<div class="sub" style="margin-top:6px">${esc(Dd.period)} · ${esc(Dd.hold)} · per trade after costs</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">${Object.keys(Dd.groups).map(k => `<button class="btn ${k === zsel[sysn] ? "" : "ghost"}" style="padding:5px 10px;font-size:12px" onclick='zsel[${JSON.stringify(sysn)}]=${JSON.stringify(k)};render()'>${esc(k)}</button>`).join("")}</div>
-        <div class="row"><div class="l muted">All ${g.n} trades</div><div class="r">${sgn(g.all)} bp · t ${sgn(g.t, 1)}</div></div>
-        ${g.rows.map(r => { const [lab, n, avg, t, h1, h2, win, rev, buys] = r; const [vt, vc] = verdict(r);
+        <div class="row"><div class="l muted">All ${g.n} trades</div><div class="r">${sgn(g.all)} bp ${tPill(g.t)}</div></div>
+        ${g.rows.map(r => { const [lab, n, avg, t, h1, h2, win, rv, buys] = r; const [vt, vc] = verdict(r);
           if (!n) return `<div class="row"><div class="l muted"><span class="dot ${zc(lab)}" style="display:inline-block"></span> ${esc(lab)}</div><div class="r muted">no trades</div></div>`;
           const both = h1 != null && h2 != null && h1 > 0 && h2 > 0;
-          return `<div style="padding:7px 0;border-bottom:1px solid rgba(127,127,127,.12)">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><span class="dot ${zc(lab)}" style="display:inline-block"></span> <b>${esc(lab)}</b></span>
-              <span><b class="${avg > 2 ? "pos" : avg < -2 ? "neg" : ""}">${sgn(avg)} bp</b> <span class="pill ${t >= 2 ? "g" : t <= -2 ? "r" : ""}">t ${t == null ? "–" : sgn(t, 1)}</span></span></div>
-            <div class="muted" style="margin-top:2px">${n} trades · halves ${h1 == null ? "–" : sgn(h1)} / ${h2 == null ? "–" : sgn(h2)}${both ? " ✓" : ""} · win ${win}% · ${buys}% buys · reversed ${rev == null ? "–" : sgn(rev)} bp</div>
-            <div style="margin-top:3px"><span class="pill ${vc}">${vt}</span></div></div>`; }).join("")}
-        <div class="muted" style="margin-top:6px">t ≥ 2 = unlikely to be luck · ✓ = positive in both halves · reversed = the same signals traded the other way.</div></div>`;
+          return `<div class="glance"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><span class="dot ${zc(lab)}" style="display:inline-block"></span> ${esc(lab)}</span>
+              <span><b class="${avg > 2 ? "pos" : avg < -2 ? "neg" : ""}">${sgn(avg)} bp</b> ${tPill(t)}</span></div>
+            <div class="sub">${n} trades · halves ${h1 == null ? "–" : sgn(h1)} / ${h2 == null ? "–" : sgn(h2)}${both ? " ✓" : ""} · win ${win}% · ${buys}% buys · reversed ${rv == null ? "–" : sgn(rv)} bp</div>
+            <div style="margin-top:3px"><span class="pill ${vc}">${vt}</span></div></div>`; }).join("")}`;
+      h += fold("bt-" + sysn, `<h2>${sysn} · backtest by distance from the 50-day</h2>`, inner);
     }
-    h += `<div class="muted" style="text-align:center">Updated ${esc(M.t)} UTC (hourly) · all zone rules are candidates, tracked in the paper records (Calc tab). Nothing here trades. <a href="#" style="color:var(--accent)" onclick='runCmd("market");return false'>/market in the chat</a></div>`;
+    h += `<div class="sub" style="text-align:center;margin:6px 0 10px"><a href="#" style="color:var(--accent)" onclick='runCmd("market");return false'>/market in the chat</a></div>`;
     return h;
   },
   res() {
     const R = S.res || {}, V = {PASS: "g", LIVE: "g", FIXED: "g", FAIL: "r", RUNNING: "y", CANDIDATE: "y"};
-    let h = "";
+    let h = how("how-res", "Every edge test with its verdict, newest first: PASS / LIVE / FIXED = kept, CANDIDATE = promising and tracked in shadow, RUNNING = still collecting, FAIL = dropped. The US-family research run and the EV research are folded below.");
+    const seen = new Set((R.log || []).map(r => r[1]));          // V13: newer tests from the snapshot + the ones built into the page
+    const all = (R.log || []).concat(RESLOG.filter(r => !seen.has(r[1])));
+    const line = r => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(r[1])}</b><span class="muted">${esc(r[0])}${r[3] ? " · " + esc(r[3]) : ""}</span></div><div class="r"><span class="pill ${V[r[2]] || ""}">${esc(r[2])}</span></div></div>`;
+    h += `<div class="card"><h2>Every edge test</h2>${all.slice(0, 12).map(line).join("") || `<div class="muted">no research log yet</div>`}
+      ${all.length > 12 ? fold("res-old", `<span class="sub">${all.length - 12} older tests</span>`, all.slice(12).map(line).join(""), false) : ""}
+      <div class="muted">Each test's numbers: <a href="#" style="color:var(--accent)" onclick='runCmd("research");return false'>/research in the chat</a>.</div></div>`;
     const us = R.us || {};
-    h += `<div class="card"><h2>DL1 · US family (training)</h2>${["US500", "NAS100", "US30"].map(g => { const u = us[g];
+    h += fold("res-us", `<h2>DL1 · US family (research run)</h2>`, `<div style="margin-top:6px">${["US500", "NAS100", "US30"].map(g => { const u = us[g];
       if (!u) return `<div class="row"><div class="l"><b>${g}</b> + 7 USD pairs</div><div class="r muted">not run yet</div></div>`;
       const lab = ["> +0.5 bp", "t ≥ 2.5", "60% months", "150 trades", "beats LightGBM"];
       return `<div class="row"><div class="l"><b>${g}</b> <span class="pill">${esc(u.m || "")}</span> <span class="pill ${u.pass1 ? "g" : "r"}">${u.pass1 ? "stage 1 PASS" : "FAIL"}</span></div><div class="r">${sgn(u.bp)} bp · t ${sgn(u.t, 2)}<div class="muted">${u.n} trades · LightGBM ${sgn(u.lg)} bp</div></div></div>
         <div class="muted" style="margin:-2px 0 6px">${lab.map((l, i) => (u.ok[i] ? "✓ " : "✗ ") + l).join(" · ")}</div>`; }).join("")}
-      <div class="muted">Pass rule fixed before training: AguEdge_1D_US\\PASS_RULE.txt. A pass is then replayed with DL1's real stop, and goes to shadow first.</div></div>`;
+      <div class="muted">Pass rule fixed before training: AguEdge_1D_US\\PASS_RULE.txt. A pass is then replayed with DL1's real stop, and goes to shadow first.</div></div>`);
     const ev = R.ev;
-    if (ev) h += `<div class="card"><h2>EV research</h2>
+    if (ev) h += `<div class="card" style="display:none"></div>` + fold("res-ev", `<h2>EV research</h2>`, `<div style="margin-top:6px">
       <div class="row"><div class="l">World EV sales ${esc(ev.year || "")}</div><div class="r">${sgn(ev.growth, 0)}% · ${ev.share ?? "–"}% of new cars <span class="pill g">${esc(ev.back || "")}</span></div></div>
       ${(ev.th || []).map(t => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(t[0])}</b><span class="muted">${esc(t[5] || "")} · ${esc(t[8])}</span></div><div class="r wrap">${t[7] ? `<span class="pill g">${esc(t[1])}</span>` : `<span class="pill">no proven edge</span>`}<div class="muted">lean ${sgn(t[2], 2)} · 3-month range ${sgn(t[3], 0)}% to ${sgn(t[4], 0)}%</div></div></div>`).join("")}
       <div class="row"><div class="l">Model skill test</div><div class="r"><span class="pill ${ev.gate ? "g" : "r"}">${ev.gate ? "passed" : "not passed yet"}</span></div></div>
       <div class="muted">LightGBM direction + PGBM range, 3-month horizon, scored only on unseen data. Built ${esc(ev.t)}. Research only -- not a trade signal.</div>
-      <div style="margin-top:8px;display:flex;gap:8px"><button class="btn" onclick='send({a:"ev_run"}, "Refresh the EV research now? (downloads the latest data and re-runs the models, a few minutes)")'>Update EV data</button><button class="btn ghost" onclick='runCmd("ev")'>Full brief</button></div></div>`;
-    h += `<div class="card"><h2>Every edge test</h2>${(R.log || []).map(r => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(r[1])}</b><span class="muted">${esc(r[0])}${r[3] ? " · " + esc(r[3]) : ""}</span></div><div class="r"><span class="pill ${V[r[2]] || ""}">${esc(r[2])}</span></div></div>`).join("") || `<div class="muted">no research log yet</div>`}
-      <div class="muted">Newest 12 shown. Every test with its result: <a href="#" style="color:var(--accent)" onclick='runCmd("research");return false'>/research in the chat</a>.</div></div>`;
+      <div style="margin-top:8px;display:flex;gap:8px"><button class="btn" onclick='send({a:"ev_run"}, "Refresh the EV research now? (downloads the latest data and re-runs the models, a few minutes)")'>Update EV data</button><button class="btn ghost" onclick='runCmd("ev")'>Full brief</button></div></div>`);
     return h;
   },
   sys() {
@@ -347,6 +427,7 @@ function render() {
 
 decode().then(d => {
   S = d;
+  if (S.rev && S.rev.r) S.rev.r.forEach(r => { if (r[2] === 0) { r[2] = r[1]; r[3] = r[3].map(x => x.length === 3 ? [x[0], x[1], x[2], x[1], x[2]] : x); } });
   document.getElementById("stamp").textContent = `as of ${d.t} UTC · market ${d.mkt ? "open" : "closed"} · send /app for fresh data`;
   render();
 }).catch(e => { document.getElementById("view").innerHTML = `<div class="empty">${esc(e.message)}</div>`; document.getElementById("stamp").textContent = ""; });
