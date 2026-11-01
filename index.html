@@ -54,7 +54,7 @@
 </head>
 <body>
 <header>
-  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v3 · 1 Nov</span></h1>
+  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v4 · 1 Nov</span></h1>
   <div class="sub" id="stamp">loading…</div>
 </header>
 <nav id="tabs"></nav>
@@ -62,7 +62,7 @@
 <script>
 const TG = window.Telegram && window.Telegram.WebApp;
 if (TG) { TG.ready(); TG.expand(); }
-const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["wage","Wage"],["ctl","Controls"]];
+const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["calc","Calc"],["wage","Wage"],["ctl","Controls"],["cmds","Commands"]];
 let S = null, tab = "home";
 const $ = (h) => { const d = document.createElement("div"); d.innerHTML = h.trim(); return d.firstChild; };
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
@@ -84,6 +84,42 @@ function send(action, question) {
     else alert("Open the app from the bot's 📱 button to send changes.");
   };
   if (TG && TG.showConfirm) TG.showConfirm(question, ok => { if (ok) go(); }); else if (confirm(question)) go();
+}
+
+function runCmd(c) {   // V4: a read-only bot command -- the answer arrives in the chat (the app closes)
+  if (TG && TG.sendData && TG.initData !== undefined) TG.sendData(JSON.stringify({a: "cmd", c: c}));
+  else alert("Open the app from the bot's 📱 button to run commands.");
+}
+
+function stats(x) {   // V4: the raw model calculator, same maths as raw_model_calculator.py
+  const n = x.length; if (n < 2) return {n};
+  const m = x.reduce((a, b) => a + b, 0) / n, sd = Math.sqrt(x.reduce((a, b) => a + (b - m) ** 2, 0) / (n - 1)), se = sd / Math.sqrt(n);
+  const w = x.filter(v => v > 0), l = x.filter(v => v <= 0), h = Math.floor(n / 2), avg = a => a.length ? a.reduce((p, q) => p + q, 0) / a.length : null;
+  const ls = l.reduce((a, b) => a + b, 0);
+  return {n, m, sd, se, t: se ? m / se : null, en: sd ? m / sd : null, need: (m > 0 && sd) ? Math.round((2 * sd / m) ** 2) : null,
+          win: w.length / n, aw: avg(w), al: avg(l), pf: ls < 0 ? w.reduce((a, b) => a + b, 0) / -ls : null, h1: avg(x.slice(0, h)), h2: avg(x.slice(h))};
+}
+function calcRows(o, usd) {
+  if (!o || !o.n || o.n < 2) return `<div class="muted">${o && o.n ? o.n + " trade -- too few to measure" : "no closed trades yet"}</div>`;
+  const f = (v, d = 1) => v == null ? "–" : (+v).toFixed(d), tv = o.t;
+  const verdict = tv == null ? "–" : tv >= 2.5 ? "strong (≥ 2.5)" : tv >= 2 ? "passes (≥ 2)" : tv >= 1 ? "promising, not proven" : tv >= 0 ? "could easily be luck" : "losing";
+  const pill = tv >= 2 ? "g" : tv >= 1 ? "y" : tv < 0 ? "r" : "";
+  return `<div class="row"><div class="l">Trades</div><div class="r">${o.n}${usd != null ? ` · ${money(usd)} net` : ""}</div></div>
+    <div class="row"><div class="l">Average per trade</div><div class="r ${o.m > 0 ? "pos" : o.m < 0 ? "neg" : ""}">${sgn(o.m)} bp</div></div>
+    <div class="row"><div class="l">Noise (SD)</div><div class="r">${f(o.sd)} bp</div></div>
+    <div class="row"><div class="l">Uncertainty of the average (SE)</div><div class="r">±${f(o.se)} bp <div class="muted">${f(o.sd)} / √${o.n}</div></div></div>
+    <div class="row"><div class="l"><b>t</b> <span class="pill ${pill}">${verdict}</span></div><div class="r"><b>${sgn(o.t, 2)}</b><div class="muted">${sgn(o.m)} / ${f(o.se)}</div></div></div>
+    <div class="row"><div class="l">Edge per unit of noise</div><div class="r">${sgn(o.en, 3)}</div></div>
+    <div class="row"><div class="l">Trades needed for t = 2</div><div class="r">${o.need == null ? "never (no edge)" : o.need}<div class="muted">(2 / ${f(o.en, 3)})²</div></div></div>
+    ${o.need ? `<div class="bar"><i style="width:${Math.min(100, 100 * o.n / o.need)}%"></i></div>` : ""}
+    <div class="row"><div class="l">Wins</div><div class="r">${Math.round(100 * o.win)}% · avg win ${sgn(o.aw)} · avg loss ${sgn(o.al)}</div></div>
+    <div class="row"><div class="l">Profit factor</div><div class="r">${f(o.pf, 2)} <span class="muted">(> 1 makes money)</span></div></div>
+    <div class="row"><div class="l">1st half / 2nd half</div><div class="r">${sgn(o.h1)} / ${sgn(o.h2)} bp <span class="pill ${o.h1 > 0 && o.h2 > 0 ? "g" : "y"}">${o.h1 > 0 && o.h2 > 0 ? "consistent" : "not stable yet"}</span></div></div>`;
+}
+function calcTyped() {
+  const x = (document.getElementById("cx").value.match(/-?\d+(\.\d+)?/g) || []).map(Number);
+  const o = stats(x);
+  document.getElementById("cout").innerHTML = calcRows(o) + (o.n >= 2 ? `<div class="muted" style="margin-top:6px">The average trade made ${sgn(o.m)} bp; single trades swing about ${o.sd.toFixed(0)} bp, so the average is uncertain by ±${o.se.toFixed(1)} bp and sits ${(o.t ?? 0).toFixed(1)} steps from zero.</div>` : "");
 }
 
 function verdictPill(v) {
@@ -129,6 +165,32 @@ const VIEWS = {
       <div class="row"><div class="l">Test average</div><div class="r">${s.test == null ? "–" : sgn(s.test) + " bp"}</div></div>
       <div class="row"><div class="l">Real cost (round trip)</div><div class="r">${s.fill == null ? "–" : sgn(s.fill) + " bp"} <span class="muted">vs ${s.budget == null ? "–" : (+s.budget).toFixed(1)} bp assumed</span></div></div>
       <div class="row"><div class="l">Net profit</div><div class="r ${s.net > 0 ? "pos" : s.net < 0 ? "neg" : ""}">${money(s.net)}</div></div></div>`).join("") || `<div class="empty">No decay report yet.</div>`;
+  },
+  calc() {
+    const C = S.calc || {}, R = S.rev;
+    let h = `<div class="card"><h2>Your own numbers</h2><div class="muted">Trade results in bp, e.g. 12 -30 8 15</div>
+      <textarea id="cx" rows="2" style="width:100%;margin:6px 0;padding:8px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text)"></textarea>
+      <button class="btn" onclick="calcTyped()">Calculate</button><div id="cout" style="margin-top:8px"></div></div>`;
+    h += ["1D", "4h", "DL1"].map(k => `<div class="card"><h2>${k} live · gross bp</h2>${calcRows(C[k], (C[k] || {}).usd)}</div>`).join("");
+    if (R) h += `<div class="card"><h2>Reverse record (no money)</h2>${["1D", "4h"].map(k => { const z = R[k] || {}, a = z.a || {}, r = z.r || {};
+        const line = q => !q.n ? "no closed trades" : `${q.n} · ${sgn(q.mean_bp)} bp · t ${q.t == null ? "–" : sgn(q.t, 2)} · ${Math.round(100 * q.win)}% wins`;
+        return `<div class="row"><div class="l"><b>${k}</b> as signalled</div><div class="r wrap">${line(a)}</div></div>
+          <div class="row"><div class="l"><b>${k}</b> REVERSED</div><div class="r wrap ${r.mean_bp > 0 ? "pos" : r.mean_bp < 0 ? "neg" : ""}">${line(r)}</div></div>
+          ${(z.last || []).map(t => `<div class="row"><div class="l muted">${esc(t[0])} ${esc(t[1])} ${esc(t[2])}</div><div class="r muted">${sgn(t[3])} bp (${esc(t[4])})</div></div>`).join("")}`; }).join("")}
+      <div class="muted">Every 1D / 4h signal also played the opposite way. Backtests: reversing loses. Updated ${esc(R.t)} UTC.</div></div>`;
+    h += `<div class="muted" style="text-align:center">t ≥ 2 = proven · "trades needed" = how many trades this edge needs to prove itself</div>`;
+    return h;
+  },
+  cmds() {
+    const L = [["check", "Gold market card", "status, levels to watch, 24 h range"], ["gold", "Gold buy plan", "ATR stop and size, like the cBot (defaults)"],
+      ["record", "Gold forward record", "how YES and GET READY days turned out"], ["forward", "No-money forward records", "WTI and USDJPY trend-buy, the dip rule"],
+      ["dip", "Dip rule record", "open trades, last signals, results by group"], ["plat", "Platinum card", "status, levels, stop, size"],
+      ["decay", "Edge decay report", "1D, 4h, DL1 live vs test, signal rate, regime"], ["shadow", "Shadow report", "why, since when, wins needed"],
+      ["risk", "All accounts", "money, open trades, loss at the stops"], ["wage", "Wage account", "balance, this week, safe to withdraw"],
+      ["calc", "Raw model calculator", "every system's t, edge/noise, trades needed (also the Calc tab)"],
+      ["reverse", "Reverse paper record", "1D and 4h traded the opposite way (also the Calc tab)"], ["help", "All commands", "the full list with options"]];
+    return `<div class="card"><h2>Bot commands</h2>${L.map(([c, t, d]) => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(t)}</b><span class="muted">/${c} · ${esc(d)}</span></div><div class="r"><button class="btn ghost" onclick='runCmd(${JSON.stringify(c)})'>Show</button></div></div>`).join("")}</div>
+      <div class="muted" style="text-align:center">The answer arrives in the chat (the app closes). Commands with options, like /gold 400 2 3d, still work typed.</div>`;
   },
   wage() {
     const w = S.wage;
