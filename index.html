@@ -54,7 +54,7 @@
 </head>
 <body>
 <header>
-  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v9 · 1 Nov</span></h1>
+  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v10.1 · 1 Nov</span></h1>
   <div class="sub" id="stamp">loading…</div>
 </header>
 <nav id="tabs"></nav>
@@ -62,8 +62,11 @@
 <script>
 const TG = window.Telegram && window.Telegram.WebApp;
 if (TG) { TG.ready(); TG.expand(); }
-const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["mkt","Market"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["sys","System"],["cmds","Commands"]];
+const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["mkt","Agu Zones"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["sys","System"],["cmds","Commands"]];
 let S = null, tab = "home";
+// V10: Agu Zones backtest detail (static -- research\\zone_detail.json, 1 Nov 2026). Row = [zone, trades, avg bp, t, 1st half, 2nd half, win %, reversed bp, buys %]
+const ZONEDATA = {"1D":{"groups":{"All pairs":{"rows":[["more than 3% below",214,20.8,2.3,21.9,18.8,50,-37.0,100],["1.5-3% below",300,-5.7,-1.1,-4.9,-7.1,45,-0.7,100],["0-1.5% below",196,-9.6,-2.1,-13.1,-6.8,46,-2.5,98],["0-1.5% above",184,2.0,0.4,-6.2,4.6,52,-6.7,3],["1.5-3% above",272,-1.0,-0.2,-7.4,2.9,51,-10.3,0],["more than 3% above",188,14.8,2.0,13.1,19.6,55,-21.1,0]],"n":1354,"all":2.8,"t":1.1},"Non-EUR FX":{"rows":[["more than 3% below",141,13.1,1.2,3.2,31.2,46,-32.8,100],["1.5-3% below",214,-4.8,-0.9,-8.7,1.9,46,-1.0,100],["0-1.5% below",124,-7.9,-1.3,-11.9,-5.0,50,-4.6,98],["0-1.5% above",128,8.2,1.4,-1.3,11.1,56,-11.7,2],["1.5-3% above",187,-0.8,-0.2,-10.7,4.2,51,-8.5,0],["more than 3% above",98,14.4,1.4,10.2,35.5,55,-18.3,0]],"n":892,"all":2.4,"t":0.8},"EUR pairs":{"rows":[["more than 3% below",31,44.3,2.6,45.3,42.0,71,-54.1,100],["1.5-3% below",68,-20.6,-2.5,-19.0,-23.0,35,12.6,100],["0-1.5% below",61,-7.7,-1.1,-10.1,-4.9,41,2.1,100],["0-1.5% above",50,-6.5,-0.9,-8.7,-5.9,48,0.1,0],["1.5-3% above",58,-4.9,-0.5,-5.1,-4.7,45,-9.1,0],["more than 3% above",39,27.6,2.0,24.7,32.2,64,-39.2,0]],"n":307,"all":-0.1,"t":-0.0},"Indices":{"rows":[["more than 3% below",42,29.1,1.0,68.3,-34.7,48,-36.4,100],["1.5-3% below",18,40.2,1.1,96.9,-48.9,67,-44.9,100],["0-1.5% below",11,-39.4,-1.5,-96.6,-26.7,27,-3.1,100],["0-1.5% above",6,-58.5,-3.3,-67.0,-54.3,0,52.4,33],["1.5-3% above",27,5.6,0.3,1.7,11.3,59,-23.9,0],["more than 3% above",51,5.9,0.4,11.9,-5.0,47,-11.6,0]],"n":155,"all":10.4,"t":0.9}},"period":"Nov 2020 - Oct 2026","hold":"held to the Friday close"},"DL1":{"groups":{"All pairs":{"rows":[["more than 3% below",165,32.7,2.9,25.8,39.0,61,-53.4,100],["1.5-3% below",203,-3.6,-0.5,-7.7,1.4,50,-3.3,100],["0-1.5% below",77,1.8,0.2,-7.9,7.0,53,-8.4,97],["0-1.5% above",74,-7.7,-1.1,-9.6,-7.0,46,0.3,0],["1.5-3% above",201,7.7,1.3,-3.7,14.3,50,-15.2,0],["more than 3% above",227,2.5,0.3,-1.8,13.9,51,-19.1,0]],"n":947,"all":6.7,"t":1.9},"Non-EUR FX":{"rows":[["more than 3% below",117,29.8,2.5,15.9,42.9,60,-43.9,100],["1.5-3% below",174,-0.6,-0.1,-8.4,9.0,53,-6.5,100],["0-1.5% below",67,8.9,0.9,4.6,11.3,57,-16.2,99],["0-1.5% above",61,-11.2,-1.4,-6.9,-13.2,46,3.6,0],["1.5-3% above",160,9.8,1.5,-5.5,18.1,51,-16.0,0],["more than 3% above",154,-3.2,-0.4,-7.0,20.8,47,-12.4,0]],"n":733,"all":6.0,"t":1.6},"EUR pairs":{"rows":[["more than 3% below",13,50.7,1.7,55.5,46.5,69,-85.9,100],["1.5-3% below",22,-7.2,-0.4,-27.1,16.7,32,10.2,100],["0-1.5% below",6,-20.7,-0.7,-58.6,-13.2,33,20.8,100],["0-1.5% above",13,8.9,0.6,-34.8,16.9,46,-15.4,0],["1.5-3% above",33,-14.7,-1.0,-7.8,-19.7,39,3.3,0],["more than 3% above",27,18.8,1.1,25.3,0.3,63,-50.2,0]],"n":114,"all":4.5,"t":0.5},"Indices":{"rows":[["more than 3% below",35,35.9,1.0,50.0,24.0,60,-73.0,100],["1.5-3% below",7,-66.3,-1.0,91.2,-184.4,43,30.7,100],["0-1.5% below",4,-83.1,-1.8,-132.5,-33.7,25,68.8,75],["0-1.5% above",0,null,null,null,null,null,null,null],["1.5-3% above",8,56.2,1.7,34.9,77.4,75,-70.3,0],["more than 3% above",46,12.0,0.5,10.5,12.5,54,-20.9,0]],"n":100,"all":14.6,"t":0.9}},"period":"Feb 2021 - Oct 2026","hold":"held to the Friday close"},"4h":{"groups":{"Both indices":{"rows":[["more than 3% below",57,42.5,2.5,47.6,37.2,67,-48.4,86],["1.5-3% below",41,18.8,1.6,20.4,17.5,61,-24.9,76],["0-1.5% below",71,15.8,1.4,24.7,8.1,68,-21.9,90],["0-1.5% above",89,-2.8,-0.3,-9.5,3.3,54,-3.4,60],["1.5-3% above",69,3.4,0.4,1.6,7.1,49,-9.5,25],["more than 3% above",134,6.7,0.7,0.6,15.8,46,-12.7,16]],"n":461,"all":11.3,"t":2.5},"UK100":{"rows":[["more than 3% below",16,38.1,1.4,38.1,null,75,-44.3,100],["1.5-3% below",22,16.1,1.2,19.9,15.0,68,-22.3,73],["0-1.5% below",56,18.8,2.3,26.0,14.8,71,-25.0,96],["0-1.5% above",78,-0.6,-0.1,-15.8,13.2,54,-5.6,62],["1.5-3% above",46,0.7,0.1,-1.6,4.6,50,-6.9,15],["more than 3% above",40,8.3,0.9,10.1,-27.0,48,-14.5,0]],"n":258,"all":9.0,"t":2.3},"JPN225":{"rows":[["more than 3% below",41,44.2,2.0,59.2,37.2,63,-50.0,80],["1.5-3% below",19,22.0,1.1,20.6,25.9,53,-27.9,79],["0-1.5% below",15,4.7,0.1,22.8,-112.9,53,-10.6,67],["0-1.5% above",11,-18.2,-0.4,37.3,-64.4,55,12.3,45],["1.5-3% above",23,9.0,0.5,7.1,14.1,48,-14.8,43],["more than 3% above",94,6.1,0.5,-8.1,17.5,45,-12.0,22]],"n":203,"all":14.2,"t":1.6}},"period":"Oct 2025 - Oct 2026","hold":"its own 8-hour trades (halves = SELECT / TEST)"}};
+const zsel = {"1D": "All pairs", "DL1": "All pairs", "4h": "Both indices"};
 const $ = (h) => { const d = document.createElement("div"); d.innerHTML = h.trim(); return d.firstChild; };
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const money = (v) => v == null ? "–" : (v < 0 ? "-$" : "$") + Math.abs(+v).toFixed(2);
@@ -177,38 +180,68 @@ const VIEWS = {
       <textarea id="cx" rows="2" style="width:100%;margin:6px 0;padding:8px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text)"></textarea>
       <button class="btn" onclick="calcTyped()">Calculate</button><div id="cout" style="margin-top:8px"></div></div>`;
     h += ["1D", "4h", "DL1"].map(k => `<div class="card"><h2>${k} live · gross bp</h2>${calcRows(C[k], (C[k] || {}).usd)}</div>`).join("");
-    if (R) h += `<div class="card"><h2>Paper records · four scenarios (no money)</h2>${Object.keys(R).filter(k => k !== "t").map(k => { const z = R[k] || {}, a = z.a || {}, r = z.r || {};
-        const line = q => !q.n ? "no closed trades" : `${q.n} · ${sgn(q.mean_bp)} bp · t ${q.t == null ? "–" : sgn(q.t, 2)} · ${Math.round(100 * q.win)}% wins`;
-        return `<div class="row"><div class="l"><b>${esc(k)}</b></div><div class="r muted">${esc(z.an || "as signalled")} vs ${esc(z.rn || "rule")}</div></div>
-          <div class="row"><div class="l muted">${esc(z.an || "as signalled")}</div><div class="r wrap">${line(a)}</div></div>
-          <div class="row"><div class="l"><b>${esc(z.rn || "rule")}</b></div><div class="r wrap ${r.mean_bp > 0 ? "pos" : r.mean_bp < 0 ? "neg" : ""}">${line(r)}</div></div>
-          ${(z.st || []).filter(x => (x[1] && x[1][0]) || (x[2] && x[2][0])).map(x => `<div class="row"><div class="l muted">· ${esc(x[0])}</div><div class="r muted">2-day ${x[1] && x[1][0] ? x[1][0] + " · " + sgn(x[1][1]) : "–"} | Friday ${x[2] && x[2][0] ? x[2][0] + " · " + sgn(x[2][1]) : "–"} bp</div></div>`).join("")}`; }).join("")}
-      <div class="muted">Four scenarios, FX only, for DL1 and 1D: 1 model non-EUR · 2 model EUR · 3 reverse non-EUR · 4 reverse EUR; each by market state (UP / DOWN / SIDEWAYS). Backtest, Friday hold: DL1 model DOWN buys +32 bp (t 3.2), SIDEWAYS -32; DL1 reverse SIDEWAYS +52 (26 trades); EUR with-trend holds lose. Updated ${esc(R.t)} UTC.</div></div>`;
+    if (R && R.r) {   // V10: compact paper records [name, [n, avg, t] base, [n, avg, t] rule, [[code, n, avg, n, avg]]]
+      const SC = {U: "uptrend", D: "downtrend", S: "sideways", B: "1.5-3% below", X: ">3% below"};
+      const ln = q => !q || !q[0] ? "no closed trades yet" : `${q[0]} trades · ${sgn(q[1])} bp · t ${q[2] == null ? "–" : sgn(q[2], 1)}`;
+      const groups = [["Deep Dip Hybrid & EUR rules", x => /Deep Dip|EUR REVERSAL/.test(x)], ["DL1 · four scenarios", x => x.startsWith("DL1 ")], ["1D · four scenarios", x => x.startsWith("1D ")], ["4h live", x => x.startsWith("4h")]];
+      h += groups.map(([gname, f]) => { const rs = R.r.filter(r => f(r[0])); if (!rs.length) return "";
+        return `<div class="card"><h2>${gname}</h2>${rs.map(r => { const same = r[1][0] === r[2][0] && r[1][1] === r[2][1];
+          const two = /MODEL/.test(r[0]) ? ["2-day exit", "Friday hold"] : /REVERSE /.test(r[0]) ? ["reversed, 2-day", "reversed, Friday"] : ["", ""];
+          return `<div style="padding:7px 0;border-bottom:1px solid rgba(127,127,127,.12)"><b>${esc(r[0].replace(/^(DL1|1D) (\d) /, "$2 · "))}</b>
+            ${same ? `<div class="row" style="border:0;padding:2px 0"><div class="l muted">result</div><div class="r ${r[2][1] > 0 ? "pos" : r[2][1] < 0 ? "neg" : ""}">${ln(r[2])}</div></div>`
+                   : `<div class="row" style="border:0;padding:2px 0"><div class="l muted">${two[0]}</div><div class="r">${ln(r[1])}</div></div><div class="row" style="border:0;padding:2px 0"><div class="l muted">${two[1]}</div><div class="r ${r[2][1] > 0 ? "pos" : r[2][1] < 0 ? "neg" : ""}">${ln(r[2])}</div></div>`}
+            ${r[3].map(x => `<div class="muted" style="padding-left:10px">· ${SC[x[0]] || x[0]}: ${same ? (x[3] ? x[3] + " · " + sgn(x[4]) + " bp" : "–") : (x[1] ? x[1] + " · " + sgn(x[2]) : "–") + " | " + (x[3] ? x[3] + " · " + sgn(x[4]) : "–") + " bp"}</div>`).join("")}</div>`; }).join("")}</div>`; }).join("");
+      h += `<div class="muted" style="margin:0 4px 8px">Paper records (no money), live signals only, updated ${esc(R.t)} UTC. Judge a line at 30+ trades with t ≥ 2. 1-4 = model non-EUR · model EUR · reversed non-EUR · reversed EUR (FX only).</div>`;
+    }
     h += `<div class="muted" style="text-align:center">t ≥ 2 = proven · "trades needed" = how many trades this edge needs to prove itself</div>`;
     return h;
   },
   mkt() {
-    const M = S.ms, G = (S.res || {}).gap;
-    const ZN = {D: ["Deep dip", "g", "more than 3% below its 50-day average", "Buy the dip: 1D +20.8 bp (t 2.3), DL1 +32.7 (t 2.9), 4h +42.5 (t 2.5) per trade. Never reverse here."],
-                E: ["EUR reversal zone", "y", "EUR pair 0-3% below its average", "Your reversal (sell): 1D +7.4, DL1 +12.7 bp. EUR model buys 1.5-3% below lose -20.6 bp."],
-                H: ["4h favoured", "g", "UK100 / JPN225 0-3% below", "4h's trades +16 to +19 bp per trade below the average (both halves)."],
-                R: ["Big rally", "y", "more than 3% above its average", "1D sells +14.8 bp (t 2.0); DL1 sells only +2.5."],
-                N: ["No edge", "", "within 3% of its average", "Nothing found: 1D within 3% -3.7 bp per trade. Skip."]};
-    const SN = {U: "up", D: "down", S: "sideways", "?": "?"};
+    const M = S.ms;
     if (!M || !M.p) return `<div class="empty">No market state yet -- shadow_manager.py builds it every hour (restart it from System).</div>`;
-    let h = `<div class="grid2"><div class="kpi"><span class="muted">Deep dips now</span><span class="big pos">${M.p.filter(x => x[3] === "D").length}</span></div><div class="kpi"><span class="muted">EUR reversal zone</span><span class="big">${M.p.filter(x => x[3] === "E").length}</span></div></div>`;
-    for (const z of ["D", "E", "H", "R", "N"]) {
-      const ps = M.p.filter(x => x[3] === z); if (!ps.length) continue;
-      const [name, c, where, rule] = ZN[z];
-      h += `<div class="card"><h2>${name} · ${ps.length}</h2><div class="muted" style="margin-bottom:6px">${where}. ${rule}</div>
-        ${ps.map(x => `<div class="row"><div class="l"><b>${esc(x[0])}</b> <span class="pill ${x[1] === "U" ? "g" : x[1] === "D" ? "r" : ""}">${SN[x[1]] || x[1]}</span>${x[1] === "S" ? ` <span class="muted">DL1 weak</span>` : ""}</div><div class="r"><span class="pill ${c}">${sgn(x[2], 1)}%</span></div></div>`).join("")}</div>`;
+    const IDX = new Set(["CA60", "JPN225", "AUS200", "UK100", "FRA40", "US500", "NAS100", "US30"]);
+    const SN = {U: "up", D: "down", S: "sideways"};
+    const bandOf = g => g <= -3 ? 0 : g <= -1.5 ? 1 : g <= 0 ? 2 : g <= 1.5 ? 3 : g <= 3 ? 4 : 5;
+    const groupOf = (sysn, p) => sysn === "4h" ? p : p.includes("EUR") ? "EUR pairs" : IDX.has(p) ? "Indices" : "Non-EUR FX";
+    const verdict = row => { const [lab, n, avg, t, h1, h2, win, rev] = row || [];
+      if (!n || n < 20) return ["too few trades", ""];
+      if (avg >= 5 && h1 > 0 && h2 > 0 && t >= 2) return ["FOLLOW · strong", "g"];
+      if (avg >= 5 && h1 > 0 && h2 > 0 && t >= 1) return ["FOLLOW · weak", "g"];
+      if (rev >= 5 && avg < 0) return ["REVERSE · candidate", "y"];
+      return ["SKIP · no steady edge", "r"]; };
+    const STATUS = {"1D": "all in shadow (paper only)", "DL1": "non-EUR live · EUR pairs in shadow", "4h": "live"};
+    const CODE = {"1D": "1", "DL1": "D", "4h": "4"};
+    let h = `<div class="muted" style="margin:2px 2px 8px">Agu Zones: for every pair, each system's backtest result at the pair's CURRENT distance from its 50-day average, and what that says to do. FOLLOW · strong = the model made +5 bp or more there, positive in both halves, t ≥ 2; FOLLOW · weak = the same with t 1-2. REVERSE = only trading the other way made money. SKIP = no steady edge either way. Deep Dip Hybrid = a model's buy only more than 3% below the average, held to Friday.</div>`;
+    h += `<div class="grid2"><div class="kpi"><span class="muted">Deep dips now (&lt; -3%)</span><span class="big pos">${M.p.filter(x => x[2] <= -3).length}</span></div><div class="kpi"><span class="muted">EUR 0-3% below</span><span class="big">${M.p.filter(x => x[0].includes("EUR") && x[2] <= 0 && x[2] > -3).length}</span></div></div>`;
+    for (const sysn of ["1D", "DL1", "4h"]) {
+      const Dd = ZONEDATA[sysn]; if (!Dd) continue;
+      const pairs = M.p.filter(x => (x[4] || "").includes(CODE[sysn]));
+      h += `<div class="card"><h2>${sysn} · now</h2><div class="muted" style="margin-bottom:4px">${STATUS[sysn]} · backtest ${esc(Dd.period)}, ${esc(Dd.hold)}</div>
+        ${pairs.map(x => { const grp = Dd.groups[groupOf(sysn, x[0])] || Dd.groups[Object.keys(Dd.groups)[0]]; const row = grp.rows[bandOf(x[2])]; const [vt, vc] = verdict(row);
+          return `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span><b>${esc(x[0])}</b> <span class="pill ${x[1] === "U" ? "g" : x[1] === "D" ? "r" : ""}">${SN[x[1]] || x[1]}</span> <span class="muted">${sgn(x[2], 1)}%</span></span>
+            <span class="muted">${esc(row ? row[0] : "")}: model ${row && row[1] ? sgn(row[2]) + " bp (" + row[1] + " trades, t " + sgn(row[3], 1) + ")" : "no trades"}${row && row[7] != null ? " · reversed " + sgn(row[7]) : ""}</span></div>
+            <div class="r"><span class="pill ${vc}">${vt}</span></div></div>`; }).join("") || `<div class="muted">no pairs</div>`}</div>`;
     }
-    if (G) h += `<div class="card"><h2>Distance from the 50-day (backtest)</h2><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums">
-      <tr><th style="text-align:left;color:var(--hint);font-weight:500">model, bp/trade</th>${(G.b || []).map(b => `<th style="color:var(--hint);font-weight:500;padding:2px 3px">${esc(b)}</th>`).join("")}</tr>
-      ${(G.r || []).map(r => `<tr><td style="padding:4px 4px 4px 0">${esc(r[0])}</td>${r[1].map(v => `<td style="text-align:right;padding:2px 3px" class="${v > 5 ? "pos" : v < -5 ? "neg" : ""}">${sgn(v, 0)}</td>`).join("")}</tr>`).join("")}
-      ${G.rev ? Object.entries(G.rev).map(([k, v]) => `<tr><td style="padding:4px 4px 4px 0">${esc(k)} EUR REVERSED</td>${v.map(x => `<td style="text-align:right;padding:2px 3px" class="${x > 5 ? "pos" : x < -5 ? "neg" : ""}">${sgn(x, 0)}</td>`).join("")}</tr>`).join("") : ""}
-      </table></div><div class="muted">Previous day's close vs its 50-day average, 2020-26. Swipe for all columns.</div></div>`;
-    h += `<div class="muted" style="text-align:center">Updated ${esc(M.t)} UTC (hourly) · trend = above a rising / below a falling 50-day average · all zone rules are candidates, tracked in the paper records (Calc tab). Nothing here trades. <a href="#" style="color:var(--accent)" onclick='runCmd("market");return false'>/market in the chat</a></div>`;
+    const zc = (lab) => lab.startsWith("more than 3% below") ? "ok" : lab.includes("above") ? "idle" : "down";
+    h += `<div class="muted" style="margin:10px 4px 4px"><b>The backtest behind it</b> -- one table per system; pick the pair group.</div>`;
+    for (const sysn of ["1D", "DL1", "4h"]) {
+      const Dd = ZONEDATA[sysn]; if (!Dd) continue;
+      const g = Dd.groups[zsel[sysn]] || Object.values(Dd.groups)[0];
+      h += `<div class="card"><h2>${sysn} · distance from the 50-day</h2>
+        <div class="muted">${esc(Dd.period)} · ${esc(Dd.hold)} · backtest, per trade after costs</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">${Object.keys(Dd.groups).map(k => `<button class="btn ${k === zsel[sysn] ? "" : "ghost"}" style="padding:5px 10px;font-size:12px" onclick='zsel[${JSON.stringify(sysn)}]=${JSON.stringify(k)};render()'>${esc(k)}</button>`).join("")}</div>
+        <div class="row"><div class="l muted">All ${g.n} trades</div><div class="r">${sgn(g.all)} bp · t ${sgn(g.t, 1)}</div></div>
+        ${g.rows.map(r => { const [lab, n, avg, t, h1, h2, win, rev, buys] = r; const [vt, vc] = verdict(r);
+          if (!n) return `<div class="row"><div class="l muted"><span class="dot ${zc(lab)}" style="display:inline-block"></span> ${esc(lab)}</div><div class="r muted">no trades</div></div>`;
+          const both = h1 != null && h2 != null && h1 > 0 && h2 > 0;
+          return `<div style="padding:7px 0;border-bottom:1px solid rgba(127,127,127,.12)">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><span class="dot ${zc(lab)}" style="display:inline-block"></span> <b>${esc(lab)}</b></span>
+              <span><b class="${avg > 2 ? "pos" : avg < -2 ? "neg" : ""}">${sgn(avg)} bp</b> <span class="pill ${t >= 2 ? "g" : t <= -2 ? "r" : ""}">t ${t == null ? "–" : sgn(t, 1)}</span></span></div>
+            <div class="muted" style="margin-top:2px">${n} trades · halves ${h1 == null ? "–" : sgn(h1)} / ${h2 == null ? "–" : sgn(h2)}${both ? " ✓" : ""} · win ${win}% · ${buys}% buys · reversed ${rev == null ? "–" : sgn(rev)} bp</div>
+            <div style="margin-top:3px"><span class="pill ${vc}">${vt}</span></div></div>`; }).join("")}
+        <div class="muted" style="margin-top:6px">t ≥ 2 = unlikely to be luck · ✓ = positive in both halves · reversed = the same signals traded the other way.</div></div>`;
+    }
+    h += `<div class="muted" style="text-align:center">Updated ${esc(M.t)} UTC (hourly) · all zone rules are candidates, tracked in the paper records (Calc tab). Nothing here trades. <a href="#" style="color:var(--accent)" onclick='runCmd("market");return false'>/market in the chat</a></div>`;
     return h;
   },
   res() {
@@ -228,8 +261,8 @@ const VIEWS = {
       <div class="row"><div class="l">Model skill test</div><div class="r"><span class="pill ${ev.gate ? "g" : "r"}">${ev.gate ? "passed" : "not passed yet"}</span></div></div>
       <div class="muted">LightGBM direction + PGBM range, 3-month horizon, scored only on unseen data. Built ${esc(ev.t)}. Research only -- not a trade signal.</div>
       <div style="margin-top:8px;display:flex;gap:8px"><button class="btn" onclick='send({a:"ev_run"}, "Refresh the EV research now? (downloads the latest data and re-runs the models, a few minutes)")'>Update EV data</button><button class="btn ghost" onclick='runCmd("ev")'>Full brief</button></div></div>`;
-    h += `<div class="card"><h2>Every edge test</h2>${(R.log || []).map(r => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(r[1])}</b><span class="muted">${esc(r[0])} · ${esc(r[3])}</span></div><div class="r"><span class="pill ${V[r[2]] || ""}">${esc(r[2])}</span></div></div>`).join("") || `<div class="muted">no research log yet</div>`}
-      <div class="muted">Newest first. AGU_MONITOR\\research\\research_log.json · /research in the chat.</div></div>`;
+    h += `<div class="card"><h2>Every edge test</h2>${(R.log || []).map(r => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(r[1])}</b><span class="muted">${esc(r[0])}${r[3] ? " · " + esc(r[3]) : ""}</span></div><div class="r"><span class="pill ${V[r[2]] || ""}">${esc(r[2])}</span></div></div>`).join("") || `<div class="muted">no research log yet</div>`}
+      <div class="muted">Newest 12 shown. Every test with its result: <a href="#" style="color:var(--accent)" onclick='runCmd("research");return false'>/research in the chat</a>.</div></div>`;
     return h;
   },
   sys() {
@@ -253,7 +286,7 @@ const VIEWS = {
       ["risk", "All accounts", "money, open trades, loss at the stops"], ["wage", "Wage account", "balance, this week, safe to withdraw"],
       ["calc", "Raw model calculator", "every system's t, edge/noise, trades needed (also the Calc tab)"],
       ["reverse", "Paper records", "EUR reverse rule (Friday hold) and DL1 Friday hold (also the Calc tab)"],
-      ["market", "Market state", "every pair's trend, distance from its 50-day and zone (also the Market tab)"],
+      ["market", "Agu Zones", "every pair's trend, distance from its 50-day and zone (also the Agu Zones tab)"],
       ["research", "Research log", "every edge test and its verdict (also the Research tab)"], ["ev", "EV research brief", "lithium / cobalt / manganese outlooks, model skill (also the Research tab)"], ["help", "All commands", "the full list with options"]];
     return `<div class="card"><h2>Bot commands</h2>${L.map(([c, t, d]) => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(t)}</b><span class="muted">/${c} · ${esc(d)}</span></div><div class="r"><button class="btn ghost" onclick='runCmd(${JSON.stringify(c)})'>Show</button></div></div>`).join("")}</div>
       <div class="muted" style="text-align:center">The answer arrives in the chat (the app closes). Commands with options, like /gold 400 2 3d, still work typed.</div>`;
