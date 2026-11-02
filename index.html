@@ -66,7 +66,7 @@
 </head>
 <body>
 <header>
-  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v14 · 2 Nov</span></h1>
+  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v15 · 2 Nov</span></h1>
   <div class="sub" id="stamp">loading…</div>
 </header>
 <nav id="tabs"></nav>
@@ -74,7 +74,7 @@
 <script>
 const TG = window.Telegram && window.Telegram.WebApp;
 if (TG) { TG.ready(); TG.expand(); }
-const TABS = [["home","Home"],["ask","Ask"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["mkt","Agu Zones"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["sys","System"],["cmds","Commands"]];
+const TABS = [["home","Home"],["ask","Ask"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["mkt","Agu Zones"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["sys","System"],["cmds","Commands"],["learn","Learn SQL"]];
 let S = null, tab = "home";
 // V10: Agu Zones backtest detail (static -- research\\zone_detail.json, 1 Nov 2026). Row = [zone, trades, avg bp, t, 1st half, 2nd half, win %, reversed bp, buys %]
 const ZONEDATA = {"1D":{"groups":{"All pairs":{"rows":[["more than 3% below",214,20.8,2.3,21.9,18.8,50,-37.0,100],["1.5-3% below",300,-5.7,-1.1,-4.9,-7.1,45,-0.7,100],["0-1.5% below",196,-9.6,-2.1,-13.1,-6.8,46,-2.5,98],["0-1.5% above",184,2.0,0.4,-6.2,4.6,52,-6.7,3],["1.5-3% above",272,-1.0,-0.2,-7.4,2.9,51,-10.3,0],["more than 3% above",188,14.8,2.0,13.1,19.6,55,-21.1,0]],"n":1354,"all":2.8,"t":1.1},"Non-EUR FX":{"rows":[["more than 3% below",141,13.1,1.2,3.2,31.2,46,-32.8,100],["1.5-3% below",214,-4.8,-0.9,-8.7,1.9,46,-1.0,100],["0-1.5% below",124,-7.9,-1.3,-11.9,-5.0,50,-4.6,98],["0-1.5% above",128,8.2,1.4,-1.3,11.1,56,-11.7,2],["1.5-3% above",187,-0.8,-0.2,-10.7,4.2,51,-8.5,0],["more than 3% above",98,14.4,1.4,10.2,35.5,55,-18.3,0]],"n":892,"all":2.4,"t":0.8},"EUR pairs":{"rows":[["more than 3% below",31,44.3,2.6,45.3,42.0,71,-54.1,100],["1.5-3% below",68,-20.6,-2.5,-19.0,-23.0,35,12.6,100],["0-1.5% below",61,-7.7,-1.1,-10.1,-4.9,41,2.1,100],["0-1.5% above",50,-6.5,-0.9,-8.7,-5.9,48,0.1,0],["1.5-3% above",58,-4.9,-0.5,-5.1,-4.7,45,-9.1,0],["more than 3% above",39,27.6,2.0,24.7,32.2,64,-39.2,0]],"n":307,"all":-0.1,"t":-0.0},"Indices":{"rows":[["more than 3% below",42,29.1,1.0,68.3,-34.7,48,-36.4,100],["1.5-3% below",18,40.2,1.1,96.9,-48.9,67,-44.9,100],["0-1.5% below",11,-39.4,-1.5,-96.6,-26.7,27,-3.1,100],["0-1.5% above",6,-58.5,-3.3,-67.0,-54.3,0,52.4,33],["1.5-3% above",27,5.6,0.3,1.7,11.3,59,-23.9,0],["more than 3% above",51,5.9,0.4,11.9,-5.0,47,-11.6,0]],"n":155,"all":10.4,"t":0.9}},"period":"Nov 2020 - Oct 2026","hold":"held to the Friday close"},"DL1":{"groups":{"All pairs":{"rows":[["more than 3% below",165,32.7,2.9,25.8,39.0,61,-53.4,100],["1.5-3% below",203,-3.6,-0.5,-7.7,1.4,50,-3.3,100],["0-1.5% below",77,1.8,0.2,-7.9,7.0,53,-8.4,97],["0-1.5% above",74,-7.7,-1.1,-9.6,-7.0,46,0.3,0],["1.5-3% above",201,7.7,1.3,-3.7,14.3,50,-15.2,0],["more than 3% above",227,2.5,0.3,-1.8,13.9,51,-19.1,0]],"n":947,"all":6.7,"t":1.9},"Non-EUR FX":{"rows":[["more than 3% below",117,29.8,2.5,15.9,42.9,60,-43.9,100],["1.5-3% below",174,-0.6,-0.1,-8.4,9.0,53,-6.5,100],["0-1.5% below",67,8.9,0.9,4.6,11.3,57,-16.2,99],["0-1.5% above",61,-11.2,-1.4,-6.9,-13.2,46,3.6,0],["1.5-3% above",160,9.8,1.5,-5.5,18.1,51,-16.0,0],["more than 3% above",154,-3.2,-0.4,-7.0,20.8,47,-12.4,0]],"n":733,"all":6.0,"t":1.6},"EUR pairs":{"rows":[["more than 3% below",13,50.7,1.7,55.5,46.5,69,-85.9,100],["1.5-3% below",22,-7.2,-0.4,-27.1,16.7,32,10.2,100],["0-1.5% below",6,-20.7,-0.7,-58.6,-13.2,33,20.8,100],["0-1.5% above",13,8.9,0.6,-34.8,16.9,46,-15.4,0],["1.5-3% above",33,-14.7,-1.0,-7.8,-19.7,39,3.3,0],["more than 3% above",27,18.8,1.1,25.3,0.3,63,-50.2,0]],"n":114,"all":4.5,"t":0.5},"Indices":{"rows":[["more than 3% below",35,35.9,1.0,50.0,24.0,60,-73.0,100],["1.5-3% below",7,-66.3,-1.0,91.2,-184.4,43,30.7,100],["0-1.5% below",4,-83.1,-1.8,-132.5,-33.7,25,68.8,75],["0-1.5% above",0,null,null,null,null,null,null,null],["1.5-3% above",8,56.2,1.7,34.9,77.4,75,-70.3,0],["more than 3% above",46,12.0,0.5,10.5,12.5,54,-20.9,0]],"n":100,"all":14.6,"t":0.9}},"period":"Feb 2021 - Oct 2026","hold":"held to the Friday close"},"4h":{"groups":{"Both indices":{"rows":[["more than 3% below",57,42.5,2.5,47.6,37.2,67,-48.4,86],["1.5-3% below",41,18.8,1.6,20.4,17.5,61,-24.9,76],["0-1.5% below",71,15.8,1.4,24.7,8.1,68,-21.9,90],["0-1.5% above",89,-2.8,-0.3,-9.5,3.3,54,-3.4,60],["1.5-3% above",69,3.4,0.4,1.6,7.1,49,-9.5,25],["more than 3% above",134,6.7,0.7,0.6,15.8,46,-12.7,16]],"n":461,"all":11.3,"t":2.5},"UK100":{"rows":[["more than 3% below",16,38.1,1.4,38.1,null,75,-44.3,100],["1.5-3% below",22,16.1,1.2,19.9,15.0,68,-22.3,73],["0-1.5% below",56,18.8,2.3,26.0,14.8,71,-25.0,96],["0-1.5% above",78,-0.6,-0.1,-15.8,13.2,54,-5.6,62],["1.5-3% above",46,0.7,0.1,-1.6,4.6,50,-6.9,15],["more than 3% above",40,8.3,0.9,10.1,-27.0,48,-14.5,0]],"n":258,"all":9.0,"t":2.3},"JPN225":{"rows":[["more than 3% below",41,44.2,2.0,59.2,37.2,63,-50.0,80],["1.5-3% below",19,22.0,1.1,20.6,25.9,53,-27.9,79],["0-1.5% below",15,4.7,0.1,22.8,-112.9,53,-10.6,67],["0-1.5% above",11,-18.2,-0.4,37.3,-64.4,55,12.3,45],["1.5-3% above",23,9.0,0.5,7.1,14.1,48,-14.8,43],["more than 3% above",94,6.1,0.5,-8.1,17.5,45,-12.0,22]],"n":203,"all":14.2,"t":1.6}},"period":"Oct 2025 - Oct 2026","hold":"its own 8-hour trades (halves = SELECT / TEST)"}};
@@ -122,6 +122,63 @@ function send(action, question) {
 function runCmd(c) {   // V4: a read-only bot command -- the answer arrives in the chat (the app closes)
   if (TG && TG.sendData && TG.initData !== undefined) TG.sendData(JSON.stringify({a: "cmd", c: c}));
   else alert("Open the app from the bot's 📱 button to run commands.");
+}
+
+// ---------------------------------------------------------------- V15: Learn SQL (runs on the phone: sql.js + learn.db)
+const SQLJS = "https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/";
+let SQLDB = null, sqlText = "SELECT symbol, gap_pct FROM pairs WHERE gap_pct < -3";
+function loadScript(src) { return new Promise((ok, bad) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => bad(new Error("could not load " + src)); document.head.appendChild(s); }); }
+async function sqlReady() {
+  if (SQLDB) return SQLDB;
+  if (!window.initSqlJs) await loadScript(SQLJS + "sql-wasm.js");
+  const SQL = await initSqlJs({ locateFile: f => SQLJS + f });
+  const r = await fetch("learn.db"); if (!r.ok) throw new Error("learn.db not found next to the app (upload agu_app\\learn.db)");
+  SQLDB = new SQL.Database(new Uint8Array(await r.arrayBuffer())); return SQLDB;
+}
+async function sqlRun(q) {
+  const db = await sqlReady(); const res = db.exec(q);
+  return res.length ? { cols: res[res.length - 1].columns, rows: res[res.length - 1].values } : { cols: [], rows: [] };
+}
+function sqlTable(r) {
+  if (!r.rows.length) return `<div class="muted">(no rows)</div>`;
+  const cell = v => v == null ? "<span class=\"muted\">null</span>" : esc(typeof v === "number" ? +v.toFixed(4) : v);
+  return `<div style="overflow-x:auto;margin-top:6px"><table style="border-collapse:collapse;font-size:12px;white-space:nowrap">
+    <tr>${r.cols.map(c => `<th style="text-align:left;padding:3px 8px;border-bottom:1px solid rgba(127,127,127,.3)">${esc(c)}</th>`).join("")}</tr>
+    ${r.rows.slice(0, 50).map(x => `<tr>${x.map(v => `<td style="padding:3px 8px;border-bottom:1px solid rgba(127,127,127,.12)">${cell(v)}</td>`).join("")}</tr>`).join("")}</table></div>
+    <div class="sub">${r.rows.length} row(s)${r.rows.length > 50 ? " -- first 50 shown" : ""}</div>`;
+}
+async function sqlGo() {
+  const out = document.getElementById("sqout"); out.innerHTML = `<div class="muted">running...</div>`;
+  try { out.innerHTML = sqlTable(await sqlRun(sqlText)); } catch (e) { out.innerHTML = `<div class="neg">SQL error: ${esc(e.message)}</div>`; }
+}
+function sqlPut(t, run) { sqlText = t; const ed = document.getElementById("sq"); if (ed) ed.value = t; if (run) sqlGo(); }
+function sqlAdd(w) { const ed = document.getElementById("sq"); sqlText = (ed.value.replace(/\s+$/, "") + " " + w + " ").replace(/^ /, ""); ed.value = sqlText; ed.focus(); }
+const HW = [
+  { q: "All research tests whose verdict is FAIL.", ref: "SELECT * FROM research WHERE verdict = 'FAIL'", key: "verdict", same: "FAIL",
+    hint: "Use the research table and WHERE verdict = 'FAIL' (words go inside single quotes)." },
+  { q: "Gold's (XAUUSD) last 5 closing prices, newest first.", ref: "SELECT day, close FROM prices WHERE symbol = 'XAUUSD' ORDER BY day DESC LIMIT 5", key: "close", order: true,
+    hint: "prices table, WHERE symbol = 'XAUUSD', then ORDER BY day DESC and LIMIT 5. Include the close column." },
+  { q: "The pair furthest ABOVE its 50-day average (one row).", ref: "SELECT symbol, gap_pct FROM pairs ORDER BY gap_pct DESC LIMIT 1", key: "symbol", order: true,
+    hint: "pairs table, ORDER BY gap_pct DESC (biggest first) and LIMIT 1. Include the symbol column." },
+  { q: "Every DL1 trade.", ref: "SELECT * FROM trades WHERE system = 'DL1'", key: "system", same: "DL1",
+    hint: "trades table, WHERE system = 'DL1'." }];
+function hwDone() { try { return JSON.parse(localStorage.getItem("agu_sql_hw") || "[]"); } catch (e) { return []; } }
+function hwSave(d) { try { localStorage.setItem("agu_sql_hw", JSON.stringify(d)); } catch (e) {} }
+async function hwCheck(i) {
+  const H = HW[i], el = document.getElementById("hw" + i);
+  try {
+    const u = await sqlRun(sqlText), r = await sqlRun(H.ref);
+    const ci = (res, c) => res.cols.findIndex(x => x.toLowerCase() === c);
+    const ui = ci(u, H.key), ri = ci(r, H.key);
+    let ok = u.rows.length === r.rows.length && ui >= 0;
+    if (ok && H.same) ok = u.rows.every(x => x[ui] === H.same);
+    if (ok && H.order) ok = u.rows.every((x, k) => String(x[ui]) === String(r.rows[k][ri]));
+    if (ok) { const d = hwDone(); d[i] = true; hwSave(d); }
+    el.innerHTML = ok ? `<span class="pill g">✓ correct</span>` : `<span class="pill r">not yet</span> <span class="sub">${u.rows.length} row(s) -- ${esc(H.hint)}</span>`;
+    const n = hwDone().filter(Boolean).length; const c = document.getElementById("hwn"); if (c) c.textContent = n + "/4";
+    const l2 = document.getElementById("l2"); if (l2) l2.textContent = n < 4 ? "Locked -- finish the homework first (" + n + "/4)." : "Homework done! Tell Claude you're ready and Lesson 2 gets added here.";
+    document.getElementById("sqout").innerHTML = sqlTable(u);
+  } catch (e) { el.innerHTML = `<span class="neg">SQL error: ${esc(e.message)}</span>`; }
 }
 
 function askBot(q) {   // V14: the Ask tab -- answered from your own files by agu_ask.py (no AI); the reply arrives in the chat
@@ -375,6 +432,31 @@ const VIEWS = {
     h += `<div class="card"><h2>File check</h2><div class="row"><div class="l">Scripts delivered by Claude</div><div class="r"><span class="pill ${F.bad && F.bad.length ? "r" : "g"}">${F.n ? (F.n - (F.bad || []).length) + " / " + F.n + " match" : "no list yet"}</span></div></div>
       ${(F.bad || []).map(b => `<div class="row"><div class="l muted">${esc(b)}</div><div class="r"><span class="pill r">different</span></div></div>`).join("")}
       <div class="muted">Each file's fingerprint (SHA-256) against AGU_MONITOR\\file_manifest.json, updated ${esc(F.t || "–")}. Replaces the PowerShell check blocks.</div></div>`;
+    return h;
+  },
+  learn() {
+    const done = hwDone(), n = done.filter(Boolean).length;
+    const kw = ["SELECT", "*", "FROM", "WHERE", "ORDER BY", "DESC", "LIMIT", "=", "<", ">", "'", ","];
+    const tb = { pairs: "symbol, trend, gap_pct, zone", prices: "symbol, day, open, high, low, close", research: "day, title, verdict, note", trades: "system, symbol, direction, day" };
+    const ex = (t, q) => `<div class="glance"><b>${t}</b><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><code style="font-size:12px">${esc(q)}</code><button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick='sqlPut(${JSON.stringify(q)}, true)'>Try</button></div></div>`;
+    let h = how("how-learn", "Practise SQL anywhere: everything runs right here on your phone, on a small copy of your data (prices of the last 13 months, every pair's zone, your research log, your trades without prices or sizes). Nothing you type can touch your trading. Lesson 2 opens only after the homework is 4/4 -- your rule.");
+    h += `<div class="card"><h2>Lesson 1 · four words</h2>
+      ${ex("SELECT … FROM … = show me … from that table", "SELECT * FROM pairs")}
+      ${ex("WHERE = only the ones that…", "SELECT symbol, gap_pct FROM pairs WHERE gap_pct < -3")}
+      ${ex("ORDER BY = line them up (add DESC for biggest first)", "SELECT symbol, gap_pct FROM pairs ORDER BY gap_pct")}
+      ${ex("LIMIT = only the first few", "SELECT symbol, gap_pct FROM pairs ORDER BY gap_pct LIMIT 3")}</div>`;
+    h += `<div class="card"><h2>Try it</h2>
+      <textarea id="sq" rows="3" spellcheck="false" autocapitalize="off" oninput="sqlText=this.value" style="width:100%;margin:6px 0;padding:8px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text);font-family:monospace;font-size:13px">${esc(sqlText)}</textarea>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">${kw.map(w => `<button class="btn ghost" style="padding:4px 8px;font-size:12px" onclick='sqlAdd(${JSON.stringify(w)})'>${esc(w)}</button>`).join("")}</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">${Object.keys(tb).map(t => `<button class="btn ghost" style="padding:4px 8px;font-size:12px" onclick='sqlAdd(${JSON.stringify(t)})'>${t}</button>`).join("")}
+        <button class="btn ghost" style="padding:4px 8px;font-size:12px" onclick='sqlPut("", false)'>clear</button></div>
+      <button class="btn" onclick="sqlGo()">Run</button>
+      <div id="sqout" style="margin-top:8px"></div>
+      ${fold("sql-tables", `<span class="sub">the tables and their columns</span>`, Object.entries(tb).map(([t, c]) => `<div class="row"><div class="l"><b>${t}</b></div><div class="r sub">${c}</div></div>`).join(""), false)}</div>`;
+    h += `<div class="card"><h2>Homework <span class="muted" style="text-transform:none;font-weight:400">· <span id="hwn">${n}/4</span></span></h2>
+      <div class="sub" style="margin-bottom:6px">Write your answer in the Try-it box above, then tap Check.</div>
+      ${HW.map((H, i) => `<div class="glance"><b>${i + 1}. ${esc(H.q)}</b><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px"><span id="hw${i}">${done[i] ? `<span class="pill g">✓ done</span>` : `<span class="muted">not done</span>`}</span><button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="hwCheck(${i})">Check</button></div></div>`).join("")}</div>`;
+    h += `<div class="card"><h2>Lesson 2 · counting and averages</h2><div class="muted" id="l2">${n < 4 ? "Locked -- finish the homework first (" + n + "/4)." : "Homework done! Tell Claude you're ready and Lesson 2 gets added here."}</div></div>`;
     return h;
   },
   ask() {
