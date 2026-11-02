@@ -66,7 +66,7 @@
 </head>
 <body>
 <header>
-  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v13 · 1 Nov</span></h1>
+  <h1>Agu Control <span style="font-size:11px;font-weight:500;color:var(--hint)">UI v14 · 2 Nov</span></h1>
   <div class="sub" id="stamp">loading…</div>
 </header>
 <nav id="tabs"></nav>
@@ -74,7 +74,7 @@
 <script>
 const TG = window.Telegram && window.Telegram.WebApp;
 if (TG) { TG.ready(); TG.expand(); }
-const TABS = [["home","Home"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["mkt","Agu Zones"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["sys","System"],["cmds","Commands"]];
+const TABS = [["home","Home"],["ask","Ask"],["acct","Accounts"],["shadow","Shadow"],["edges","Edges"],["mkt","Agu Zones"],["calc","Calc"],["res","Research"],["wage","Wage"],["ctl","Controls"],["sys","System"],["cmds","Commands"]];
 let S = null, tab = "home";
 // V10: Agu Zones backtest detail (static -- research\\zone_detail.json, 1 Nov 2026). Row = [zone, trades, avg bp, t, 1st half, 2nd half, win %, reversed bp, buys %]
 const ZONEDATA = {"1D":{"groups":{"All pairs":{"rows":[["more than 3% below",214,20.8,2.3,21.9,18.8,50,-37.0,100],["1.5-3% below",300,-5.7,-1.1,-4.9,-7.1,45,-0.7,100],["0-1.5% below",196,-9.6,-2.1,-13.1,-6.8,46,-2.5,98],["0-1.5% above",184,2.0,0.4,-6.2,4.6,52,-6.7,3],["1.5-3% above",272,-1.0,-0.2,-7.4,2.9,51,-10.3,0],["more than 3% above",188,14.8,2.0,13.1,19.6,55,-21.1,0]],"n":1354,"all":2.8,"t":1.1},"Non-EUR FX":{"rows":[["more than 3% below",141,13.1,1.2,3.2,31.2,46,-32.8,100],["1.5-3% below",214,-4.8,-0.9,-8.7,1.9,46,-1.0,100],["0-1.5% below",124,-7.9,-1.3,-11.9,-5.0,50,-4.6,98],["0-1.5% above",128,8.2,1.4,-1.3,11.1,56,-11.7,2],["1.5-3% above",187,-0.8,-0.2,-10.7,4.2,51,-8.5,0],["more than 3% above",98,14.4,1.4,10.2,35.5,55,-18.3,0]],"n":892,"all":2.4,"t":0.8},"EUR pairs":{"rows":[["more than 3% below",31,44.3,2.6,45.3,42.0,71,-54.1,100],["1.5-3% below",68,-20.6,-2.5,-19.0,-23.0,35,12.6,100],["0-1.5% below",61,-7.7,-1.1,-10.1,-4.9,41,2.1,100],["0-1.5% above",50,-6.5,-0.9,-8.7,-5.9,48,0.1,0],["1.5-3% above",58,-4.9,-0.5,-5.1,-4.7,45,-9.1,0],["more than 3% above",39,27.6,2.0,24.7,32.2,64,-39.2,0]],"n":307,"all":-0.1,"t":-0.0},"Indices":{"rows":[["more than 3% below",42,29.1,1.0,68.3,-34.7,48,-36.4,100],["1.5-3% below",18,40.2,1.1,96.9,-48.9,67,-44.9,100],["0-1.5% below",11,-39.4,-1.5,-96.6,-26.7,27,-3.1,100],["0-1.5% above",6,-58.5,-3.3,-67.0,-54.3,0,52.4,33],["1.5-3% above",27,5.6,0.3,1.7,11.3,59,-23.9,0],["more than 3% above",51,5.9,0.4,11.9,-5.0,47,-11.6,0]],"n":155,"all":10.4,"t":0.9}},"period":"Nov 2020 - Oct 2026","hold":"held to the Friday close"},"DL1":{"groups":{"All pairs":{"rows":[["more than 3% below",165,32.7,2.9,25.8,39.0,61,-53.4,100],["1.5-3% below",203,-3.6,-0.5,-7.7,1.4,50,-3.3,100],["0-1.5% below",77,1.8,0.2,-7.9,7.0,53,-8.4,97],["0-1.5% above",74,-7.7,-1.1,-9.6,-7.0,46,0.3,0],["1.5-3% above",201,7.7,1.3,-3.7,14.3,50,-15.2,0],["more than 3% above",227,2.5,0.3,-1.8,13.9,51,-19.1,0]],"n":947,"all":6.7,"t":1.9},"Non-EUR FX":{"rows":[["more than 3% below",117,29.8,2.5,15.9,42.9,60,-43.9,100],["1.5-3% below",174,-0.6,-0.1,-8.4,9.0,53,-6.5,100],["0-1.5% below",67,8.9,0.9,4.6,11.3,57,-16.2,99],["0-1.5% above",61,-11.2,-1.4,-6.9,-13.2,46,3.6,0],["1.5-3% above",160,9.8,1.5,-5.5,18.1,51,-16.0,0],["more than 3% above",154,-3.2,-0.4,-7.0,20.8,47,-12.4,0]],"n":733,"all":6.0,"t":1.6},"EUR pairs":{"rows":[["more than 3% below",13,50.7,1.7,55.5,46.5,69,-85.9,100],["1.5-3% below",22,-7.2,-0.4,-27.1,16.7,32,10.2,100],["0-1.5% below",6,-20.7,-0.7,-58.6,-13.2,33,20.8,100],["0-1.5% above",13,8.9,0.6,-34.8,16.9,46,-15.4,0],["1.5-3% above",33,-14.7,-1.0,-7.8,-19.7,39,3.3,0],["more than 3% above",27,18.8,1.1,25.3,0.3,63,-50.2,0]],"n":114,"all":4.5,"t":0.5},"Indices":{"rows":[["more than 3% below",35,35.9,1.0,50.0,24.0,60,-73.0,100],["1.5-3% below",7,-66.3,-1.0,91.2,-184.4,43,30.7,100],["0-1.5% below",4,-83.1,-1.8,-132.5,-33.7,25,68.8,75],["0-1.5% above",0,null,null,null,null,null,null,null],["1.5-3% above",8,56.2,1.7,34.9,77.4,75,-70.3,0],["more than 3% above",46,12.0,0.5,10.5,12.5,54,-20.9,0]],"n":100,"all":14.6,"t":0.9}},"period":"Feb 2021 - Oct 2026","hold":"held to the Friday close"},"4h":{"groups":{"Both indices":{"rows":[["more than 3% below",57,42.5,2.5,47.6,37.2,67,-48.4,86],["1.5-3% below",41,18.8,1.6,20.4,17.5,61,-24.9,76],["0-1.5% below",71,15.8,1.4,24.7,8.1,68,-21.9,90],["0-1.5% above",89,-2.8,-0.3,-9.5,3.3,54,-3.4,60],["1.5-3% above",69,3.4,0.4,1.6,7.1,49,-9.5,25],["more than 3% above",134,6.7,0.7,0.6,15.8,46,-12.7,16]],"n":461,"all":11.3,"t":2.5},"UK100":{"rows":[["more than 3% below",16,38.1,1.4,38.1,null,75,-44.3,100],["1.5-3% below",22,16.1,1.2,19.9,15.0,68,-22.3,73],["0-1.5% below",56,18.8,2.3,26.0,14.8,71,-25.0,96],["0-1.5% above",78,-0.6,-0.1,-15.8,13.2,54,-5.6,62],["1.5-3% above",46,0.7,0.1,-1.6,4.6,50,-6.9,15],["more than 3% above",40,8.3,0.9,10.1,-27.0,48,-14.5,0]],"n":258,"all":9.0,"t":2.3},"JPN225":{"rows":[["more than 3% below",41,44.2,2.0,59.2,37.2,63,-50.0,80],["1.5-3% below",19,22.0,1.1,20.6,25.9,53,-27.9,79],["0-1.5% below",15,4.7,0.1,22.8,-112.9,53,-10.6,67],["0-1.5% above",11,-18.2,-0.4,37.3,-64.4,55,12.3,45],["1.5-3% above",23,9.0,0.5,7.1,14.1,48,-14.8,43],["more than 3% above",94,6.1,0.5,-8.1,17.5,45,-12.0,22]],"n":203,"all":14.2,"t":1.6}},"period":"Oct 2025 - Oct 2026","hold":"its own 8-hour trades (halves = SELECT / TEST)"}};
@@ -122,6 +122,12 @@ function send(action, question) {
 function runCmd(c) {   // V4: a read-only bot command -- the answer arrives in the chat (the app closes)
   if (TG && TG.sendData && TG.initData !== undefined) TG.sendData(JSON.stringify({a: "cmd", c: c}));
   else alert("Open the app from the bot's 📱 button to run commands.");
+}
+
+function askBot(q) {   // V14: the Ask tab -- answered from your own files by agu_ask.py (no AI); the reply arrives in the chat
+  q = String(q || "").trim().slice(0, 300); if (!q) return;
+  if (TG && TG.sendData && TG.initData !== undefined) TG.sendData(JSON.stringify({a: "ask", q: q}));
+  else alert("Open the app from the bot's 📱 button to ask.");
 }
 
 function quick(action) {   // V6: read-only request (a log) -- no confirmation; the answer arrives in the chat
@@ -291,10 +297,10 @@ const VIEWS = {
     const PG = (S.rev && S.rev.pg) || [], GV = {WAIT: ["collecting", ""], PASS: ["PASS", "g"], FAIL: ["FAIL", "r"], "NOT PROVEN": ["not proven yet", "y"]};
     const gl = (a, v) => { const [vt, vc] = GV[v] || [v, ""]; const n = a ? a[0] : 0;
       return `<span class="pill ${vc}">${vt}</span> <span class="muted">${n}/30${a && a[1] != null ? " · " + sgn(a[1]) + " bp" : ""}${a && a[2] != null && n >= 2 ? " · t " + sgn(a[2]) : ""}</span>`; };
-    h += `<div class="card"><h2>Deep-dip rule · judged by group <span class="muted" style="text-transform:none;font-weight:400">· shadow</span></h2>
+    h += `<div class="card"><h2>Zone rules · judged by group <span class="muted" style="text-transform:none;font-weight:400">· shadow</span></h2>
       ${PG.length ? PG.map(r => `<div class="glance"><b>${esc(r[0])}</b><div style="display:flex;justify-content:space-between;gap:8px"><span class="muted">fixed 3%</span><span>${gl(r[1], r[2])}</span></div><div style="display:flex;justify-content:space-between;gap:8px"><span class="muted">own swings</span><span>${gl(r[3], r[4])}</span></div></div>`).join("")
         : `<div class="muted">No deep-dip shadow trades yet.</div>`}
-      <div class="sub">This is how the rule is judged. Each group pools the deep-dip buys of all its pairs. At 30 trades: PASS if t ≥ 2 and both halves made money; FAIL if it lost overall; otherwise keep collecting. After a PASS, its pairs go live one by one with your rule (2 deep-dip wins in a row). Expected pace: 1D non-EUR about 31 a year, DL1 non-EUR about 21, EUR (1D + DL1) about 7, 4h about 49, NAS100 about 12, US500 about 10.</div></div>`;
+      <div class="sub">This is how the rule is judged. Each group pools the deep-dip buys of all its pairs. At 30 trades: PASS if t ≥ 2 and both halves made money; FAIL if it lost overall; otherwise keep collecting. After a PASS, its pairs go live one by one with your rule (2 deep-dip wins in a row). The "1D · rally sells" group is the mirror image: 1D's sells more than 3% above the average (1D only -- DL1's sells there lose). Expected pace: Gold deep dips about 13 a year, 1D rally sells about 32, 1D non-EUR dips about 31, DL1 non-EUR about 21, EUR (1D + DL1) about 7, 4h about 49, NAS100 about 12, US500 about 10.</div></div>`;
     // each pair: its deep-dip streak (your rule, used once its group has passed)
     const PS = (S.rev && S.rev.ps) || [];
     const stk = k => !k ? `<span class="muted">–</span>` : k >= 2 ? `<span class="pill g">${k} wins in a row ✓</span>` : k <= -2 ? `<span class="pill r">${-k} losses in a row</span>` : `<span class="muted">${k > 0 ? "1 win" : "1 loss"}</span>`;
@@ -308,6 +314,11 @@ const VIEWS = {
         ${Object.entries(Z.g).map(([g, [a, b]]) => `<div class="glance"><b>${esc(g)}</b><div class="sub">fixed 3%: ${q(a)}</div><div class="sub">own swings: ${q(b)}</div></div>`).join("")}
         ${fold("v2p-" + k, `<span class="sub">per pair (${Z.p.length})</span>`, Z.p.map(r => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(r[0])}</b><span class="muted">1 swing = ${r[1] == null ? "–" : r[1].toFixed(2)}%</span></div><div class="r" style="text-align:right"><div class="sub">3%: ${q(r[2])}</div><div class="sub">swings: ${q(r[3])}</div></div></div>`).join(""), false)}</div>`; }).join("");
     h += fold("bt-v2", `<h2>Fixed 3% vs own swings · backtest</h2>`, `<div class="sub" style="margin-top:6px">Model buys held to Friday, deep = more than 3% below (fixed) or more than 4 of the pair's own daily swings below. Test set before running: own swings had to match the fixed 3% per trade with at least as many trades, t ≥ 2 and both halves positive. <b>It failed</b> (1D +4.2 vs +20.0 bp, DL1 +15.1 vs +29.5); it stays in shadow for the final judgment.</div>${v2in}`);
+    // 3d. V13: Gold deep dip (plain rule, shadow)
+    const gold = M.p.filter(x => (x[4] || "").includes("G"));
+    if (gold.length) h += `<div class="card"><h2>Gold · now <span class="muted" style="text-transform:none;font-weight:400">· deep-dip paper record</span></h2>
+      ${gold.map(x => `<div class="row"><div class="l"><b>${esc(x[0])}</b> <span class="pill ${x[1] === "U" ? "g" : x[1] === "D" ? "r" : ""}">${SN[x[1]] || x[1]}</span> <span class="muted">${sgn(x[2], 1)}%${swTxt(x)}</span></div><div class="r"><span class="pill ${x[2] <= -3 ? "g" : ""}">${x[2] <= -3 ? "deep dip · paper buys on" : x[2] > 0 ? "above: your live gold rule's side" : "wait (needs below -3%)"}</span></div></div>`).join("")}
+      <div class="sub">Plain rule, no model: buy at the 17:00 New York close when gold's previous close is more than 3% below its 50-day, held to Friday. Backtest 2020-26: +34.7 bp per trade (t 1.2), 0-3% below loses. Your live gold rule only buys ABOVE the average, so the two never overlap. Paper only.</div></div>`;
     // 4. the backtest tables, folded
     const zc = (lab) => lab.startsWith("more than 3% below") ? "ok" : lab.includes("above") ? "idle" : "down";
     for (const sysn of ["4h", "DL1", "1D"]) {
@@ -364,6 +375,17 @@ const VIEWS = {
     h += `<div class="card"><h2>File check</h2><div class="row"><div class="l">Scripts delivered by Claude</div><div class="r"><span class="pill ${F.bad && F.bad.length ? "r" : "g"}">${F.n ? (F.n - (F.bad || []).length) + " / " + F.n + " match" : "no list yet"}</span></div></div>
       ${(F.bad || []).map(b => `<div class="row"><div class="l muted">${esc(b)}</div><div class="r"><span class="pill r">different</span></div></div>`).join("")}
       <div class="muted">Each file's fingerprint (SHA-256) against AGU_MONITOR\\file_manifest.json, updated ${esc(F.t || "–")}. Replaces the PowerShell check blocks.</div></div>`;
+    return h;
+  },
+  ask() {
+    const EX = [["Where is a pair?", ["EURCAD zone", "gold zone", "NAS100 zone"]], ["Why no trade?", ["why no DL1 trade", "why no gold trade"]],
+      ["How are the records doing?", ["DL1 record", "gold record", "1D record", "EUR record"]], ["Live or shadow?", ["is EURJPY live", "DL1 status"]],
+      ["Streaks", ["AUDUSD streak", "all streaks"]], ["Money", ["open trades", "risk"]], ["Research and rules", ["research gold", "DL1 rule", "4h rule"]]];
+    let h = how("how-ask", "Ask in plain words. The bot answers from your own files -- market state, paper records, decisions, settings, the research log -- with no AI, so it never makes things up. Name a pair (EURCAD, gold, nasdaq...) or a system (4h, DL1, 1D, gold, US, EUR, wage) and what you want to know. The answer arrives in the chat (the app closes). Same as /ask in Telegram.");
+    h += `<div class="card"><h2>Ask</h2>
+      <textarea id="askq" rows="2" maxlength="300" placeholder="e.g. why no DL1 trade today?" style="width:100%;margin:6px 0;padding:8px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text)"></textarea>
+      <button class="btn" onclick='askBot(document.getElementById("askq").value)'>Ask</button></div>`;
+    h += `<div class="card"><h2>Tap a question</h2>${EX.map(([t, qs]) => `<div class="glance"><b>${esc(t)}</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${qs.map(q => `<button class="btn ghost" style="padding:5px 10px;font-size:12px" onclick='askBot(${JSON.stringify(q)})'>${esc(q)}</button>`).join("")}</div></div>`).join("")}</div>`;
     return h;
   },
   cmds() {
