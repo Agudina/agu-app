@@ -235,6 +235,15 @@ const VIEWS = {
     if (bad.length) h += `<div class="card alert"><h2>⚠️ Needs you</h2>${bad.map(b => `<div class="row"><div class="l"><span class="dot down"></span>${esc(b.n)}</div><div class="r muted">${b.age} min</div></div><div class="muted" style="margin:-2px 0 6px 17px">${esc(b.why)}</div>`).join("")}</div>`;
     const tot = S.acct.filter(a => a.ok).reduce((s, a) => s + (+a.bal || 0), 0), risk = S.acct.reduce((s, a) => s + (+a.risk || 0), 0);
     h += `<div class="grid2"><div class="kpi"><span class="muted">All accounts</span><span class="big">${money(tot)}</span></div><div class="kpi"><span class="muted">At stops now</span><span class="big">${money(risk)}</span><span class="muted">${tot ? (100*risk/tot).toFixed(1) + "% of all money" : ""}</span></div></div>`;
+    // V16: every open trade and its bp now (cents per $100 in the trade)
+    const OT = S.ot || [];
+    h += `<div class="card"><h2>Open trades now <span class="muted" style="text-transform:none;font-weight:400">· ${OT.length}</span></h2>${OT.length ? [...new Set(OT.map(r => r[0]))].map(acct =>
+      `<div class="sub" style="font-weight:600;color:var(--text);margin-top:6px">${esc(acct)}</div>` + OT.filter(r => r[0] === acct).map(r =>
+        `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span><b>${esc(r[1])}</b> <span class="pill">${r[2] === "B" ? "BUY" : "SELL"}</span> <span class="muted">${esc(r[3])}</span></span>
+          <span class="sub">stop at ${r[5] == null ? "–" : sgn(r[5], 0) + " bp"}${r[7] == null ? "" : " · open " + Math.round(r[7]) + " h"}${r[6] == null ? "" : " · " + (r[6] < 0 ? "-$" : "$") + Math.abs(r[6]).toFixed(2)}</span></div>
+          <div class="r"><b class="${r[4] > 0 ? "pos" : r[4] < 0 ? "neg" : ""}">${r[4] == null ? "–" : sgn(r[4], 0) + " bp"}</b></div></div>`).join("")).join("")
+      : `<div class="muted">No open trades right now.</div>`}
+      <div class="sub" style="margin-top:4px">bp = cents per $100 in the trade, from entry to the latest 30-min price, before costs. "stop at" = where it ends if the stop is hit.</div></div>`;
     const sys = S.sys || {};
     h += `<div class="card"><h2>Systems</h2>${Object.entries(sys).map(([n, s]) => `<div class="row"><div class="l"><b>${esc(n)}</b> ${verdictPill(s.v)}</div><div class="r">${s.n || 0} trades · ${s.avg == null ? "–" : sgn(s.avg) + " bp"}<div class="muted">test ${s.test == null ? "–" : sgn(s.test) + " bp"} · open ${s.open ?? 0}</div></div></div>`).join("")}${goldRow()}<div class="muted">decay report ${esc(S.decay_t)} UTC</div></div>`;
     h += `<div class="card"><h2>Health</h2>${S.health.map(x => `<div class="row"><div class="l"><span class="dot ${x.s}"></span>${esc(x.n)}</div><div class="r muted">${x.s === "off" ? "not set up" : x.s === "idle" ? "weekend / off-hours" : x.age + " min"}</div></div>`).join("")}</div>`;
@@ -478,7 +487,7 @@ const VIEWS = {
       ["risk", "All accounts", "money, open trades, loss at the stops"], ["wage", "Wage account", "balance, this week, safe to withdraw"],
       ["calc", "Raw model calculator", "every system's t, edge/noise, trades needed (also the Calc tab)"],
       ["reverse", "Paper records", "EUR reverse rule (Friday hold) and DL1 Friday hold (also the Calc tab)"],
-      ["market", "Agu Zones", "every pair's trend, distance from its 50-day and zone (also the Agu Zones tab)"],
+      ["market", "Agu Zones", "every pair's trend, distance from its 50-day and zone (also the Agu Zones tab)"], ["open", "Open trades", "every open trade and its bp now (also the Home tab)"],
       ["research", "Research log", "every edge test and its verdict (also the Research tab)"], ["ev", "EV research brief", "lithium / cobalt / manganese outlooks, model skill (also the Research tab)"], ["help", "All commands", "the full list with options"]];
     return `<div class="card"><h2>Bot commands</h2>${L.map(([c, t, d]) => `<div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><b>${esc(t)}</b><span class="muted">/${c} · ${esc(d)}</span></div><div class="r"><button class="btn ghost" onclick='runCmd(${JSON.stringify(c)})'>Show</button></div></div>`).join("")}</div>
       <div class="muted" style="text-align:center">The answer arrives in the chat (the app closes). Commands with options, like /gold 400 2 3d, still work typed.</div>`;
