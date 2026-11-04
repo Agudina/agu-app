@@ -355,9 +355,9 @@ const VIEWS = {
     }
     // 3. US indices (shadow)
     const us = M.p.filter(x => (x[4] || "").includes("U"));
-    if (us.length) h += `<div class="card"><h2>US indices · now <span class="muted" style="text-transform:none;font-weight:400">· shadow</span></h2>
-      ${us.map(x => `<div class="row"><div class="l"><b>${esc(x[0])}</b> <span class="pill ${x[1] === "U" ? "g" : x[1] === "D" ? "r" : ""}">${SN[x[1]] || x[1]}</span> <span class="muted">${sgn(x[2], 1)}%${swTxt(x)}</span></div><div class="r"><span class="pill ${x[2] <= -3 ? "g" : ""}">${x[2] <= -3 ? "deep dip · shadow buys on" : "wait (needs below -3%)"}</span></div></div>`).join("")}
-      <div class="sub">Buys only, when the model says buy AND the index is more than 3% below its 50-day; entry 18:30 New York. Leak-free backtest: NAS100 +72 bp per trade (t 2.4); US500 +30 bp (t 1.1).</div></div>`;
+    if (us.length) h += `<div class="card"><h2>US indices · now <span class="muted" style="text-transform:none;font-weight:400">· NAS100 live · US500 shadow</span></h2>
+      ${us.map(x => `<div class="row"><div class="l"><b>${esc(x[0])}</b> <span class="pill ${x[1] === "U" ? "g" : x[1] === "D" ? "r" : ""}">${SN[x[1]] || x[1]}</span> <span class="muted">${sgn(x[2], 1)}%${swTxt(x)}</span></div><div class="r"><span class="pill ${x[2] <= -3 ? "g" : ""}">${x[2] <= -3 ? (x[0] === "NAS100" ? "deep dip · LIVE buys on" : "deep dip · paper buys on") : "wait (needs below -3%)"}</span></div></div>`).join("")}
+      <div class="sub">Buys only, when the model says buy AND the index is more than 3% below its 50-day; entry after 18:00 New York. NAS100 trades LIVE through the DL1 trader (backtest +72 bp per trade, t 2.4); US500 stays on paper (+30 bp, t 1.1 -- weak).</div></div>`;
     // 3b. V13: the deep-dip rule judged by group, then each pair (information only)
     // V13: THE judgment -- by group (a single pair gets only 1-4 deep dips a year)
     const PG = (S.rev && S.rev.pg) || [], GV = {WAIT: ["collecting", ""], PASS: ["PASS", "g"], FAIL: ["FAIL", "r"], "NOT PROVEN": ["not proven yet", "y"]};
