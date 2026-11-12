@@ -233,7 +233,7 @@ const VIEWS = {
   home() {
     const bad = S.health.filter(h => h.s === "down");
     let h = "";
-    if (bad.length) h += `<div class="card alert"><h2>⚠️ Needs you</h2>${bad.map(b => `<div class="row"><div class="l"><span class="dot down"></span>${esc(b.n)}</div><div class="r muted">${b.age} min</div></div><div class="muted" style="margin:-2px 0 6px 17px">${esc(b.why)}</div>`).join("")}</div>`;
+    if (bad.length) h += `<div class="card alert"><h2>⚠️ Needs you</h2>${bad.map(b => `<div class="row"><div class="l"><span class="dot down"></span>${esc(b.n)}</div><div class="r muted">${b.age == null ? "now" : b.age + " min"}</div></div><div class="muted" style="margin:-2px 0 6px 17px">${esc(b.why)}</div>`).join("")}</div>`;
     const tot = S.acct.filter(a => a.ok).reduce((s, a) => s + (+a.bal || 0), 0), risk = S.acct.reduce((s, a) => s + (+a.risk || 0), 0);
     h += `<div class="grid2"><div class="kpi"><span class="muted">All accounts</span><span class="big">${money(tot)}</span></div><div class="kpi"><span class="muted">At stops now</span><span class="big">${money(risk)}</span><span class="muted">${tot ? (100*risk/tot).toFixed(1) + "% of all money" : ""}</span></div></div>`;
     // V16: every open trade and its bp now (cents per $100 in the trade)
@@ -247,7 +247,7 @@ const VIEWS = {
       <div class="sub" style="margin-top:4px">bp = cents per $100 in the trade, from entry to the latest 30-min price, before costs. "stop at" = where it ends if the stop is hit.</div></div>`;
     const sys = S.sys || {};
     h += `<div class="card"><h2>Systems</h2>${Object.entries(sys).map(([n, s]) => `<div class="row"><div class="l"><b>${esc(n)}</b> ${verdictPill(s.v)}</div><div class="r">${s.n || 0} trades · ${s.avg == null ? "–" : sgn(s.avg) + " bp"}<div class="muted">test ${s.test == null ? "–" : sgn(s.test) + " bp"} · open ${s.open ?? 0}</div></div></div>`).join("")}${goldRow()}<div class="muted">decay report ${esc(S.decay_t)} UTC</div></div>`;
-    h += `<div class="card"><h2>Health</h2>${S.health.map(x => `<div class="row"><div class="l"><span class="dot ${x.s}"></span>${esc(x.n)}</div><div class="r muted">${x.s === "off" ? "not set up" : x.s === "idle" ? "weekend / off-hours" : x.age + " min"}</div></div>`).join("")}</div>`;
+    h += `<div class="card"><h2>Health</h2>${S.health.map(x => `<div class="row"><div class="l"><span class="dot ${x.s}"></span>${esc(x.n)}</div><div class="r muted">${x.s === "off" ? "not set up" : x.s === "idle" ? "weekend / off-hours" : x.age == null ? (x.s === "ok" ? "all logged in" : "LOGGED OUT") : x.age + " min"}</div></div>`).join("")}</div>`;
     return h;
   },
   acct() {
@@ -383,7 +383,7 @@ const VIEWS = {
           Object.entries(HOLDBT.s).map(([g, L]) => `<div class="sub" style="margin-top:6px"><b>${esc(g)}</b></div>` + L.map(x => `<div class="row"><div class="l">${esc(x[0])} <span class="muted">${x[1]} tr</span></div><div class="r">best ${x[2]} h ${sgn(x[3], 0)} <span class="pill ${x[7] === "A" ? "g" : x[7] === "D" ? "y" : ""}">${x[7] === "A" ? "agrees" : x[7] === "D" ? "differs" : "few"}</span></div></div>`).join("")).join(""), false)}</div>`;
     }
     h += `<div class="card"><h2>Zone rules · judged by group <span class="muted" style="text-transform:none;font-weight:400">· shadow</span></h2>
-      ${PG.length ? PG.map(r => `<div class="glance"><b>${esc(r[0])}</b> ${r[5] === "LIVE" ? `<span class="pill g">LIVE</span>` : r[5] === "PROBATION" ? `<span class="pill y">PROBATION · 1% risk</span>` : `<span class="pill">SHADOW</span>`}<div style="display:flex;justify-content:space-between;gap:8px"><span class="muted">fixed 3%</span><span>${gl(r[1], r[2])}</span></div><div style="display:flex;justify-content:space-between;gap:8px"><span class="muted">own swings</span><span>${gl(r[3], r[4])}</span></div></div>`).join("")
+      ${PG.length ? PG.map(r => `<div class="glance"><b>${esc(r[0])}</b> ${r[5] === "LIVE" ? `<span class="pill g">LIVE</span>` : r[5] === "PROBATION" ? `<span class="pill y">PROBATION · 1% risk</span>` : `<span class="pill">SHADOW</span>`}${r[6] ? ` <span class="pill">${esc(r[6])}</span>` : ""}<div style="display:flex;justify-content:space-between;gap:8px"><span class="muted">fixed 3%</span><span>${gl(r[1], r[2])}</span></div><div style="display:flex;justify-content:space-between;gap:8px"><span class="muted">own swings</span><span>${gl(r[3], r[4])}</span></div></div>`).join("")
         : `<div class="muted">No deep-dip shadow trades yet.</div>`}
       <div class="sub"><b>Stages:</b> SHADOW (paper) → PROBATION at 15 paper trades with a positive average and a positive 2nd half (live at 1% risk) → LIVE when the group PASSES at 30 (normal risk). Probation ends (back to shadow) if the record turns negative.</div>
       <div class="sub">This is how the rule is judged. Each group pools the deep-dip buys of all its pairs. At 30 trades: PASS if t ≥ 2 and both halves made money; FAIL if it lost overall; otherwise keep collecting. After a PASS, its pairs go live one by one with your rule (2 deep-dip wins in a row). The "1D · rally sells" group is the mirror image: 1D's sells more than 3% above the average (1D only -- DL1's sells there lose). Expected pace: Gold deep dips about 13 a year, 1D rally sells about 32, 1D non-EUR dips about 31, DL1 non-EUR about 21, EUR (1D + DL1) about 7, 4h about 49, NAS100 about 12, US500 about 10.</div></div>`;
@@ -587,6 +587,19 @@ const VIEWS = {
           <div class="r"><button class="btn ${vx[0] ? "ghost" : ""}" onclick='send({a:"h4_vix_risk",v:${!vx[0]}}, "${vx[0] ? "Turn the VIX risk rule OFF? (normal 4h risk at any VIX)" : "Turn the VIX risk rule ON? (half risk while VIX is at or below 20)"}")'>${vx[0] ? "Turn off" : "Turn on"}</button></div></div>`; })()}
       <div class="row"><div class="l">Take-profit <span class="pill ${c.h4_tp ? "y" : "g"}">${c.h4_tp ? "on" : "off -- stop only"}</span></div><div class="r"><button class="btn ghost" onclick='send({a:"h4_tp",v:${!c.h4_tp}}, "${c.h4_tp ? "Turn the 4h take-profit OFF? (the stop stays; winners run to the 8 h exit)" : "Turn the 4h take-profit back ON?"}")'>${c.h4_tp ? "Turn off" : "Turn on"}</button></div></div>
       ${(c.h4_paused || []).filter(s => ["UK100","JPN225"].includes(s)).map(s => `<div class="row"><div class="l">${esc(s)} <span class="pill y">paused</span></div><div class="r"><button class="btn" onclick='send({a:"h4_resume",sym:${JSON.stringify(s)}}, "RESUME 4h ${esc(s)}?")'>Resume</button></div></div>`).join("")}</div>`;
+    const v3 = c.v3;   // V22 (12 Nov 2026): v3-A6 / v3-B live on the 4h account
+    if (v3) {
+      const out = v3[6] || [];
+      const st = !v3[0] ? ["OFF -- no new v3 trades", "r"] : !v3[1] ? ["DRY RUN -- logs only", "y"] : out.length ? ["LOGGED OUT -- " + out.join(", "), "r"] : ["LIVE", "g"];
+      h += `<div class="card"><h2>v3 live <span class="muted" style="text-transform:none;font-weight:400">· 4h account 9019014</span></h2>
+      <div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span>Status <span class="pill ${st[1]}">${esc(st[0])}</span></span><span class="sub">${esc((v3[3] || []).join(" + "))} · BUY only · 8 h hold · stop 2× volatility · no new trades Friday. Turns itself off if v3 is negative or behind dip-VIX20 after 15 trades.</span></div>
+        <div class="r"><button class="btn ${v3[0] ? "ghost" : ""}" onclick='send({a:"v3_on",v:${!v3[0]}}, "${v3[0] ? "Turn v3 LIVE OFF? (no new v3 trades; open ones run to their exit; paper records continue)" : "Turn v3 LIVE ON? (v3-A6 / v3-B signals are traded on the 4h account)"}")'>${v3[0] ? "Turn off" : "Turn on"}</button></div></div>
+      ${slider("v3r", v3[2], 1, 10, 1, "Risk per trade %", `send({a:"v3_risk",v:+document.getElementById("v3r").value}, "Set v3 live risk to "+document.getElementById("v3r").value+"% per trade?")`)}
+      <div class="row"><div class="l">Trader</div><div class="r">${v3[4] ? money(v3[4]) : `<span class="neg">balance 0 -- logged out?</span>`} <span class="muted">· ${v3[10] || 0} open · ${v3[5] == null ? "–" : v3[5] + " min ago"}</span></div></div>
+      <div class="row"><div class="l">Last event</div><div class="r wrap muted">${esc(v3[9] || "–")}</div></div>
+      <div class="row"><div class="l">Login watchdog <span class="pill ${v3[7] ? "g" : "y"}">${v3[7] ? "on" : "not loaded"}</span></div><div class="r wrap muted">${esc(v3[8] || "no restarts yet")}</div></div>
+      <div class="sub">Restarts a logged-out 4h cBot after 3 min and tells you here in Telegram. Wage copies v3 at ${w.v3 && w.v3.risk ? w.v3.risk + "%" : "–"} (Wage account copies card).</div></div>`;
+    }
     h += `<div class="card"><h2>Move a pair to shadow</h2><div class="ctl"><select id="ss"><option>DL1</option><option>1D</option><option>4h</option></select><input id="sy" placeholder="e.g. AUDJPY" style="flex:1;min-width:0;padding:7px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text)"><button class="btn" onclick='const s=document.getElementById("ss").value,y=document.getElementById("sy").value.trim().toUpperCase(); if(/^[A-Z0-9]{5,7}$/.test(y)) send({a:"shadow",sys:s,sym:y}, "Move "+s+" "+y+" to SHADOW (no trading)?")'>Shadow</button></div></div>`;
     h += `<div class="muted" style="text-align:center">Every change asks you first, is checked again by the bot on your PC, and is logged.</div>`;
     return h;
