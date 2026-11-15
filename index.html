@@ -592,13 +592,28 @@ const VIEWS = {
       const out = v3[6] || [];
       const st = !v3[0] ? ["OFF -- no new v3 trades", "r"] : !v3[1] ? ["DRY RUN -- logs only", "y"] : out.length ? ["LOGGED OUT -- " + out.join(", "), "r"] : ["LIVE", "g"];
       h += `<div class="card"><h2>v3 live <span class="muted" style="text-transform:none;font-weight:400">· 4h account 9019014</span></h2>
-      <div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span>Status <span class="pill ${st[1]}">${esc(st[0])}</span></span><span class="sub">${esc((v3[3] || []).join(" + "))} · BUY only · 8 h hold · stop 2× volatility · no new trades Friday. Turns itself off if v3 is negative or behind dip-VIX20 after 15 trades.</span></div>
+      <div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span>Status <span class="pill ${st[1]}">${esc(st[0])}</span></span><span class="sub">${esc((v3[3] || []).join(" + "))} · BUY only · v3-A6 20 h hold, v3-B 8 h · stop 2× volatility · no new trades Friday. Turns itself off if v3 is negative or behind dip-VIX20 after 15 trades.</span></div>
         <div class="r"><button class="btn ${v3[0] ? "ghost" : ""}" onclick='send({a:"v3_on",v:${!v3[0]}}, "${v3[0] ? "Turn v3 LIVE OFF? (no new v3 trades; open ones run to their exit; paper records continue)" : "Turn v3 LIVE ON? (v3-A6 / v3-B signals are traded on the 4h account)"}")'>${v3[0] ? "Turn off" : "Turn on"}</button></div></div>
       ${slider("v3r", v3[2], 1, 10, 1, "Risk per trade %", `send({a:"v3_risk",v:+document.getElementById("v3r").value}, "Set v3 live risk to "+document.getElementById("v3r").value+"% per trade?")`)}
       <div class="row"><div class="l">Trader</div><div class="r">${v3[4] ? money(v3[4]) : `<span class="neg">balance 0 -- logged out?</span>`} <span class="muted">· ${v3[10] || 0} open · ${v3[5] == null ? "–" : v3[5] + " min ago"}</span></div></div>
       <div class="row"><div class="l">Last event</div><div class="r wrap muted">${esc(v3[9] || "–")}</div></div>
       <div class="row"><div class="l">Login watchdog <span class="pill ${v3[7] ? "g" : "y"}">${v3[7] ? "on" : "not loaded"}</span></div><div class="r wrap muted">${esc(v3[8] || "no restarts yet")}</div></div>
       <div class="sub">Restarts a logged-out 4h cBot after 3 min and tells you here in Telegram. Wage copies v3 at ${w.v3 && w.v3.risk ? w.v3.risk + "%" : "–"} (Wage account copies card).</div></div>`;
+    }
+    const vx = c.vix;   // V23 (14 Nov 2026): VIX INDEX EDGE live on the 4h account
+    if (vx) {
+      const st = !vx[0] ? ["OFF -- no new VIX trades", "r"] : !vx[1] ? ["DRY RUN -- logs only", "y"] : ["LIVE", "g"];
+      const fv = vx[12] || [];
+      h += `<div class="card"><h2>VIX index edge <span class="muted" style="text-transform:none;font-weight:400">· 4h account 9019014</span></h2>
+      <div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span>Status <span class="pill ${st[1]}">${esc(st[0])}</span></span><span class="sub">VIX above 20 + the index fell yesterday + LightGBM p ≥ 0.55 · 8 indices · BUY at the day's first bar, out at its last · stop 2× daily volatility.</span></div>
+        <div class="r"><button class="btn ${vx[0] ? "ghost" : ""}" onclick='send({a:"vix_on",v:${!vx[0]}}, "${vx[0] ? "Turn the VIX index edge OFF? (no new VIX trades; open ones run to the day end; paper records continue)" : "Turn the VIX index edge ON? (approved index buys are traded on the 4h account)"}")'>${vx[0] ? "Turn off" : "Turn on"}</button></div></div>
+      ${slider("vxr", vx[2], 0.5, 5, 0.5, "Risk per trade %", `send({a:"vix_risk",v:+document.getElementById("vxr").value}, "Set the VIX index risk to "+document.getElementById("vxr").value+"% per trade?")`)}
+      <div class="row"><div class="l">Caps</div><div class="r">VIX ${vx[9] == null ? "–" : vx[9] + "%"} of ${vx[3] || "–"}% <span class="muted">· account ${vx[10] == null ? "–" : vx[10] + "%"} of ${vx[4] || "–"}%</span></div></div>
+      <div class="row"><div class="l">Today</div><div class="r wrap muted">${esc(vx[11] || "–")}</div></div>
+      <div class="row"><div class="l">Fast VIX <span class="pill ${fv[2] ? "g" : "r"}">${fv[2] ? "ok" : "stale"}</span></div><div class="r">${fv[1] == null ? "–" : fv[1]} <span class="muted">· ${esc(fv[0] || "–")} (CBOE)</span></div></div>
+      <div class="row"><div class="l">Trader</div><div class="r">${vx[5] ? money(vx[5]) : `<span class="neg">not running / not built</span>`} <span class="muted">· ${vx[8] || 0} open · ${vx[6] == null ? "–" : vx[6] + " min ago"}</span></div></div>
+      <div class="row"><div class="l">Last event</div><div class="r wrap muted">${esc(vx[7] || "–")}</div></div>
+      <div class="sub">Signals over a cap are not traded and go to the paper record "vix-index over cap". Wage copies VIX at ${w.vix && w.vix.risk ? w.vix.risk + "%" : "–"} (Wage account copies card).</div></div>`;
     }
     h += `<div class="card"><h2>Move a pair to shadow</h2><div class="ctl"><select id="ss"><option>DL1</option><option>1D</option><option>4h</option></select><input id="sy" placeholder="e.g. AUDJPY" style="flex:1;min-width:0;padding:7px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text)"><button class="btn" onclick='const s=document.getElementById("ss").value,y=document.getElementById("sy").value.trim().toUpperCase(); if(/^[A-Z0-9]{5,7}$/.test(y)) send({a:"shadow",sys:s,sym:y}, "Move "+s+" "+y+" to SHADOW (no trading)?")'>Shadow</button></div></div>`;
     h += `<div class="muted" style="text-align:center">Every change asks you first, is checked again by the bot on your PC, and is logged.</div>`;
