@@ -621,6 +621,23 @@ const VIEWS = {
         <div class="row"><div class="l">Per-trade ceiling</div><div class="r">${mx ?? 4}% <span class="muted">· every edge · skipped if the smallest lot is bigger</span></div></div>`; })()}
       <div class="sub">Signals over a cap are not traded and go to the paper record "vix-index over cap". Wage copies VIX at ${w.vix && w.vix.risk ? w.vix.risk + "%" : "–"} (Wage account copies card).</div></div>`;
     }
+    const rm = c.rm;   // V25 (19 Nov 2026): 4-RED MIDDLE live on the 4h account
+    if (rm) {
+      const [on, tl, rk, rk2, age, ev, op, ar, cap, today, mk, nsig] = rm;
+      const st = !on ? ["OFF -- no new trades", "r"] : !tl ? ["DRY RUN -- logs only", "y"] : ["LIVE", "g"];
+      h += `<div class="card"><h2>4-Red Middle <span class="muted" style="text-transform:none;font-weight:400">· 4h account 9019014</span></h2>
+      <div class="row"><div class="l" style="flex-direction:column;align-items:flex-start;gap:0"><span>Status <span class="pill ${st[1]}">${esc(st[0])}</span></span><span class="sub">Index or gold within 3% of its 50-day closes its 4th red day in a row → BUY at the next open, hold 5 trading days (over weekends) · safety stop 2× daily volatility × √5.</span></div>
+        <div class="r"><button class="btn ${on ? "ghost" : ""}" onclick='send({a:"rmid_on",v:${!on}}, "${on ? "Turn 4-Red Middle OFF? (no new trades; open ones run to their 5-day exit; the paper record continues)" : "Turn 4-Red Middle ON? (signals are traded on the 4h account, wage copies)"}")'>${on ? "Turn off" : "Turn on"}</button></div></div>
+      ${slider("rmr", rk, 0.5, 4, 0.5, "Risk per trade %", `send({a:"rmid_risk",v:+document.getElementById("rmr").value}, "Set 4-Red Middle risk to "+document.getElementById("rmr").value+"% per trade?")`)}
+      ${slider("rmr2", rk2, 0.5, 4, 0.5, "Risk when another is open %", `send({a:"rmid_risk2",v:+document.getElementById("rmr2").value}, "Set 4-Red Middle risk to "+document.getElementById("rmr2").value+"% when another 4-Red trade is open?")`)}
+      <div class="row"><div class="l">Account risk</div><div class="r">${ar == null ? "–" : ar + "%"} of ${cap || "–"}%</div></div>
+      <div class="row"><div class="l">Last check</div><div class="r wrap muted">${esc(today || "– (first check after the next daily close, 22:35 UTC)")}</div></div>
+      ${(mk || []).length ? `<div class="row"><div class="l">Red days in a row</div><div class="r wrap">${mk.map(x => x[1] == null ? `<span class="muted">${esc(x[0])} –</span>` : `<span class="${x[1] >= 3 && Math.abs(x[2]) < 3 ? "" : "muted"}">${esc(x[0])} <b>${x[1]}</b> <span class="muted">${x[2] > 0 ? "+" : ""}${x[2]}%</span></span>`).join(" · ")}</div></div>` : ""}
+      <div class="row"><div class="l">Open trades</div><div class="r wrap">${(op || []).length ? op.map(o => `${esc(o[0])} <span class="${o[1] >= 0 ? "" : "neg"}">${o[1] == null ? "–" : money(o[1])}</span> <span class="muted">exit ${esc(o[2])}</span>`).join("<br>") : `<span class="muted">none</span>`}</div></div>
+      <div class="row"><div class="l">Trader</div><div class="r">${age == null ? `<span class="neg">not running / not built</span>` : `<span class="muted">${age} min ago · ${nsig || 0} signal(s) so far</span>`}</div></div>
+      <div class="row"><div class="l">Last event</div><div class="r wrap muted">${esc(ev || "–")}</div></div>
+      <div class="sub">Wage copies at the same %. Friday close leaves these trades alone. 4% per-trade ceiling and the 25% account cap apply.</div></div>`;
+    }
     h += `<div class="card"><h2>Move a pair to shadow</h2><div class="ctl"><select id="ss"><option>DL1</option><option>1D</option><option>4h</option></select><input id="sy" placeholder="e.g. AUDJPY" style="flex:1;min-width:0;padding:7px;border-radius:8px;border:0;background:rgba(127,127,127,.15);color:var(--text)"><button class="btn" onclick='const s=document.getElementById("ss").value,y=document.getElementById("sy").value.trim().toUpperCase(); if(/^[A-Z0-9]{5,7}$/.test(y)) send({a:"shadow",sys:s,sym:y}, "Move "+s+" "+y+" to SHADOW (no trading)?")'>Shadow</button></div></div>`;
     h += `<div class="muted" style="text-align:center">Every change asks you first, is checked again by the bot on your PC, and is logged.</div>`;
     return h;
